@@ -9,7 +9,7 @@
 6. APK dự kiến: `app/build/outputs/apk/debug/app-debug.apk`.
 7. Cho phép AndroidIDE cài ứng dụng từ nguồn này và cài APK lên máy mẹ.
 
-Bản v1.4 JAPAN dùng compileSdk/targetSdk 34, AGP 8.2.2, JDK 17 để dễ tương thích AndroidIDE hơn.
+Bản v1.5 AUTOSCROLL dùng compileSdk/targetSdk 34, AGP 8.2.2, JDK 17 để dễ tương thích AndroidIDE hơn.
 
 ## Cách B — GitHub Actions (vẫn thao tác hoàn toàn trên điện thoại)
 Project có sẵn `.github/workflows/build-apk.yml`.

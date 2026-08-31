@@ -1,4 +1,4 @@
-# LongDPC v1.4 JAPAN — kiểm tra source
+# LongDPC v1.5 AUTOSCROLL — kiểm tra source
 
 ## PASS
 - Project/package: `com.longkaca.dpc`.
@@ -11,7 +11,7 @@
   - TikTok: `com.ss.android.ugc.trill`
   - TikTok Lite: `com.ss.android.ugc.tiktok.lite`
   - LINE: `jp.naver.line.android`
-  - Auto Clicker: `com.truedevelopersstudio.automatictap.autoclicker`
+  - Auto Scroll: `com.tafayor.autoscrolling`
 - Android 12+ dùng `WifiManager.addNetworkPrivileged()`; Android 8–11 dùng `addNetwork()`.
 - PackageInstaller khóa package mong đợi của từng APK.
 - Máy mẹ tự tính SHA-256 URL-safe Base64 của APK LongDPC đang cài để điền checksum QR.

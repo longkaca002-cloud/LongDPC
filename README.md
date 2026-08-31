@@ -1,4 +1,4 @@
-# LongDPC v1.4 JAPAN — AQUOS / arrows
+# LongDPC v1.5 AUTOSCROLL — AQUOS / arrows
 
 ## Mục tiêu
 Máy mẹ tạo QR Android Enterprise; máy con factory reset -> chạm 6 lần -> quét QR -> Wi‑Fi -> tải DPC -> Fully Managed / Device Owner -> cài APK từ URL HTTPS.
@@ -9,11 +9,11 @@ Apps khóa package cho bản Nhật:
 - TikTok Nhật: `com.ss.android.ugc.trill`
 - TikTok Lite Nhật: `com.ss.android.ugc.tiktok.lite`
 - LINE: `jp.naver.line.android`
-- Auto Clicker: `com.truedevelopersstudio.automatictap.autoclicker`
+- Auto Scroll: `com.tafayor.autoscrolling`
 
-## Cải tiến v1.4
+## Cải tiến v1.5
 - Đổi TikTok/TikTok Lite sang package đang dùng ở Nhật.
-- Thay Auto Scroll cũ bằng Auto Clicker package `com.truedevelopersstudio.automatictap.autoclicker`.
+- Thay Auto Scroll cũ bằng Auto Scroll package `com.tafayor.autoscrolling`.
 - Nâng `versionCode` lên 5, `versionName` thành `1.4-japan`.
 - Giữ nguyên provisioning Android 12+ (`GET_PROVISIONING_MODE`, `ADMIN_POLICY_COMPLIANCE`, `PROVISIONING_SUCCESSFUL`).
 - Máy mẹ tự tính SHA-256 URL-safe Base64 của APK LongDPC đang cài và điền sẵn checksum.
