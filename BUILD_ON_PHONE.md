@@ -1,15 +1,15 @@
 # Chạy thử LongDPC hoàn toàn từ điện thoại
 
 ## Cách A — AndroidIDE (máy mẹ)
-1. Cài AndroidIDE từ nguồn tin cậy (GitHub Releases/F-Droid của dự án gốc).
+1. Cài AndroidIDE đã ngừng bảo trì; ưu tiên Cách B — GitHub Actions. Chỉ dùng AndroidIDE nếu toolchain trên máy đã hoạt động.
 2. Mở Terminal trong AndroidIDE, chạy `idesetup -c -j 17` và xác nhận cài build tools.
 3. Giải nén project này ra bộ nhớ trong.
-4. Trong AndroidIDE: Open existing project -> chọn thư mục `LongDPC_v1_3_phone_test`.
+4. Trong AndroidIDE: Open existing project -> chọn thư mục `LongDPC_v1_4_JAPAN`.
 5. Chờ Gradle sync xong. Bấm Quick Run / Run để chạy `assembleDebug`.
 6. APK dự kiến: `app/build/outputs/apk/debug/app-debug.apk`.
 7. Cho phép AndroidIDE cài ứng dụng từ nguồn này và cài APK lên máy mẹ.
 
-Bản phone-test dùng compileSdk/targetSdk 34, AGP 8.2.2, JDK 17 để dễ tương thích AndroidIDE hơn.
+Bản v1.4 JAPAN dùng compileSdk/targetSdk 34, AGP 8.2.2, JDK 17 để dễ tương thích AndroidIDE hơn.
 
 ## Cách B — GitHub Actions (vẫn thao tác hoàn toàn trên điện thoại)
 Project có sẵn `.github/workflows/build-apk.yml`.

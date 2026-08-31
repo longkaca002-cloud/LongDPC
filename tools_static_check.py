@@ -30,6 +30,18 @@ for p in java:
     txt=p.read_text()
     ok(txt.startswith('package com.longkaca.dpc;'), f'package mismatch: {p.name}')
 
+
+main=(root/'app/src/main/java/com/longkaca/dpc/MainActivity.java').read_text()
+for pkg in [
+    'com.ss.android.ugc.trill',
+    'com.ss.android.ugc.tiktok.lite',
+    'jp.naver.line.android',
+    'com.truedevelopersstudio.automatictap.autoclicker',
+]:
+    ok(pkg in main, f'missing expected app package: {pkg}')
+for old in ['com.zhiliaoapp.musically','com.zhiliaoapp.musically.go','com.tafayor.autoscrolling']:
+    ok(old not in main, f'old app package still present: {old}')
+
 # Cheap syntax sanity checks that catch accidental unbalanced braces/comments/strings poorly, not a compiler replacement.
 for p in java:
     txt=p.read_text()

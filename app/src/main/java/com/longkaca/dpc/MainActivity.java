@@ -14,12 +14,12 @@ import java.util.List;
 
 public class MainActivity extends Activity {
     private LinearLayout root;
-    private final String[] appNames = {"TikTok", "TikTok Lite", "LINE", "Auto Scroll"};
+    private final String[] appNames = {"TikTok Nhật", "TikTok Lite Nhật", "LINE", "Auto Clicker"};
     private final String[] packages = {
-            "com.zhiliaoapp.musically",
-            "com.zhiliaoapp.musically.go",
+            "com.ss.android.ugc.trill",
+            "com.ss.android.ugc.tiktok.lite",
             "jp.naver.line.android",
-            "com.tafayor.autoscrolling"
+            "com.truedevelopersstudio.automatictap.autoclicker"
     };
 
     @Override public void onCreate(Bundle b) {
