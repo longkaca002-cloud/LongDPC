@@ -1,0 +1,18 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.longkaca.dpc'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.longkaca.dpc'
+        minSdk 26
+        targetSdk 34
+        versionCode 6
+        versionName '1.5-autoscroll'
+    }
+}
+
+dependencies {
+    implementation 'com.google.zxing:core:3.5.3'
+}
