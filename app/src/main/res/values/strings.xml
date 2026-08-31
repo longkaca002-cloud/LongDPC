@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Long DPC</string>
+    <string name="device_admin_label">Long Device Owner</string>
+    <string name="device_admin_desc">Quản lý thiết bị và cấu hình tự động.</string>
+</resources>
