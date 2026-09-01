@@ -128,13 +128,33 @@ public class MainActivity extends Activity {
 
         root.addView(title("Cài APK"));
         List<EditText> urls = new ArrayList<>();
-        for(int i=0;i<4;i++) urls.add(field("URL APK HTTPS — "+appNames[i], ConfigStore.get(this,"apk_"+i+"_url","")));
-        Button install = button("CÀI CÁC APP TỪ URL");
+        for(int i=0;i<4;i++) {
+            final int idx = i;
+            EditText e = field("URL APK HTTPS — "+appNames[i], ConfigStore.get(this,"apk_"+i+"_url",""));
+            urls.add(e);
+            Button one = button("CÀI RIÊNG — " + appNames[i]);
+            one.setOnClickListener(v -> installSingleFromField(e, idx));
+        }
+        Button install = button("CÀI TẤT CẢ URL KHÔNG TRỐNG");
         install.setOnClickListener(v -> installFromFields(urls));
+
+        Button clear = button("XÓA 4 URL APP ĐÃ LƯU");
+        clear.setOnClickListener(v -> {
+            for (int i=0;i<4;i++) {
+                ConfigStore.put(this,"apk_"+i+"_url","");
+                urls.get(i).setText("");
+            }
+            ConfigStore.clearAutoInstallState(this);
+            Toast.makeText(this,"Đã xóa URL app đã lưu",Toast.LENGTH_LONG).show();
+        });
     }
 
     private void maybeAutoInstall() {
+        // Chỉ tự cài khi chính provisioning QR hiện tại yêu cầu.
+        // Bản cũ đọc URL lưu từ lần trước nên có thể tự thử TikTok cũ và báo 404.
+        if (!ConfigStore.isAutoInstallRequested(this)) return;
         if (ConfigStore.isAutoInstallStarted(this)) return;
+
         boolean any = false;
         for (int i=0;i<4;i++) {
             if (!ConfigStore.get(this,"apk_"+i+"_url","").trim().isEmpty()) { any = true; break; }
@@ -143,6 +163,27 @@ public class MainActivity extends Activity {
 
         ConfigStore.markAutoInstallStarted(this);
         new Thread(() -> installSavedUrls(false)).start();
+    }
+
+    private void installSingleFromField(EditText urlField, int i) {
+        String u = urlField.getText().toString().trim();
+        if (u.isEmpty()) {
+            Toast.makeText(this,"Chưa có URL cho " + appNames[i],Toast.LENGTH_LONG).show();
+            return;
+        }
+        if (!u.startsWith("https://")) {
+            Toast.makeText(this,"URL phải bắt đầu bằng https://",Toast.LENGTH_LONG).show();
+            return;
+        }
+        ConfigStore.put(this,"apk_"+i+"_url",u);
+        new Thread(() -> {
+            try {
+                ApkInstaller.downloadAndInstall(this,u,appNames[i],packages[i]);
+            } catch(Exception e) {
+                final String msg = e.getMessage() == null ? e.toString() : e.getMessage();
+                runOnUiThread(() -> Toast.makeText(this,"Lỗi "+appNames[i]+": "+msg,Toast.LENGTH_LONG).show());
+            }
+        }).start();
     }
 
     private void installFromFields(List<EditText> urls) {

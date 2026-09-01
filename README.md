@@ -1,3 +1,11 @@
+# LongDPC v1.7 — App install fix
+
+- Giữ provisioning fix của v1.6.
+- Không tự chạy URL app cũ khi chỉ mở LongDPC.
+- Auto-install chỉ chạy khi QR provisioning hiện tại mang URL app.
+- Có nút cài riêng từng app để test từng URL.
+- Có nút xóa 4 URL app đã lưu.
+
 # LongDPC v1.6 provisioning-fix — AQUOS / arrows
 
 Bản này tập trung sửa luồng QR Device Owner sau khi TestDPC chính thức đã provision được trên máy thử.

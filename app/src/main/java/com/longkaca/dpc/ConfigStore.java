@@ -13,9 +13,15 @@ public final class ConfigStore {
         SharedPreferences.Editor e = prefs(c).edit();
         e.putString("wifi_ssid", safe(b.getString("wifi_ssid")));
         e.putString("wifi_password", safe(b.getString("wifi_password")));
+        boolean anyAppUrl = false;
         for (int i = 0; i < 4; i++) {
-            e.putString("apk_" + i + "_url", safe(b.getString("apk_" + i + "_url")));
+            String url = safe(b.getString("apk_" + i + "_url")).trim();
+            e.putString("apk_" + i + "_url", url);
+            if (!url.isEmpty()) anyAppUrl = true;
         }
+        // Chỉ auto-install cho bộ URL nhận từ provisioning QR hiện tại.
+        e.putBoolean("auto_install_requested", anyAppUrl);
+        e.putBoolean("auto_install_started", false);
         e.apply();
     }
 
@@ -25,6 +31,18 @@ public final class ConfigStore {
 
     public static boolean isProvisioned(Context c) {
         return prefs(c).getBoolean("provisioned", false);
+    }
+
+
+    public static boolean isAutoInstallRequested(Context c) {
+        return prefs(c).getBoolean("auto_install_requested", false);
+    }
+
+    public static void clearAutoInstallState(Context c) {
+        prefs(c).edit()
+                .putBoolean("auto_install_requested", false)
+                .putBoolean("auto_install_started", false)
+                .apply();
     }
 
     public static boolean isAutoInstallStarted(Context c) {
