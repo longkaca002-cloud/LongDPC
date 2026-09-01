@@ -1,39 +1,15 @@
-# LongDPC v1.5 AUTOSCROLL — AQUOS / arrows
+# LongDPC v1.6 provisioning-fix — AQUOS / arrows
 
-## Mục tiêu
-Máy mẹ tạo QR Android Enterprise; máy con factory reset -> chạm 6 lần -> quét QR -> Wi‑Fi -> tải DPC -> Fully Managed / Device Owner -> cài APK từ URL HTTPS.
+Bản này tập trung sửa luồng QR Device Owner sau khi TestDPC chính thức đã provision được trên máy thử.
 
-Wi‑Fi mặc định: `Longkaca` / `15082020`.
+Thay đổi chính:
+- Tự trả `PROVISIONING_MODE_FULLY_MANAGED_DEVICE`; không hiển thị màn chọn mode.
+- Trả `EXTRA_PROVISIONING_SKIP_EDUCATION_SCREENS=true`.
+- Chuyển tiếp `PROVISIONING_ADMIN_EXTRAS_BUNDLE` từ GET_PROVISIONING_MODE sang compliance.
+- `ADMIN_POLICY_COMPLIANCE` trả đúng `setResult(RESULT_OK, Intent)` rồi `finish()`.
+- Không tự mở Activity khác trong luồng compliance Android 10+.
+- QR dùng `PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM` giống TestDPC thay vì hash toàn file APK.
+- Wi-Fi chỉ được nhúng QR khi SSID không trống.
+- App thứ 4: Auto Scroll `com.tafayor.autoscrolling`.
 
-Apps khóa package cho bản Nhật:
-- TikTok Nhật: `com.ss.android.ugc.trill`
-- TikTok Lite Nhật: `com.ss.android.ugc.tiktok.lite`
-- LINE: `jp.naver.line.android`
-- Auto Scroll: `com.tafayor.autoscrolling`
-
-## Cải tiến v1.5
-- Đổi TikTok/TikTok Lite sang package đang dùng ở Nhật.
-- Thay Auto Scroll cũ bằng Auto Scroll package `com.tafayor.autoscrolling`.
-- Nâng `versionCode` lên 5, `versionName` thành `1.4-japan`.
-- Giữ nguyên provisioning Android 12+ (`GET_PROVISIONING_MODE`, `ADMIN_POLICY_COMPLIANCE`, `PROVISIONING_SUCCESSFUL`).
-- Máy mẹ tự tính SHA-256 URL-safe Base64 của APK LongDPC đang cài và điền sẵn checksum.
-- Device Owner dùng `PackageInstaller` để cài APK đơn/universal từ URL HTTPS trực tiếp.
-- Đổi Wi‑Fi sau provisioning: Android 12+ dùng `addNetworkPrivileged()`, Android 8–11 dùng `addNetwork()`.
-
-## Build
-- compileSdk 34
-- targetSdk 34
-- minSdk 26
-- Android Gradle Plugin 8.2.2
-- Gradle 8.2+
-- JDK 17
-
-Build thuận tiện nhất trên điện thoại bằng GitHub Actions trong `.github/workflows/build-apk.yml`.
-APK sau build nằm trong artifact `LongDPC-debug-apk`, file bên trong là `app-debug.apk`.
-
-## Lưu ý
-- Không bypass FRP/activation lock.
-- Không tự đăng nhập Gmail cá nhân.
-- Firmware docomo/au/SoftBank/Sharp/FCNT có thể có bước Setup Wizard riêng.
-- URL của 4 app phải là HTTPS tải trực tiếp **APK đơn/universal** và bạn phải có quyền sử dụng/phân phối nguồn APK đó. Link trang Google Play không phải URL APK trực tiếp.
-- Không hỗ trợ XAPK/APKM/split APK nhiều file ở bản này.
+Build: compileSdk 34 / targetSdk 34 / minSdk 26 / AGP 8.2.2 / JDK 17.

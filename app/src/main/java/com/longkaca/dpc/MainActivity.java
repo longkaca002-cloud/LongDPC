@@ -44,16 +44,16 @@ public class MainActivity extends Activity {
     private void showMotherMode() {
         root.addView(title("MÁY MẸ — tạo QR provisioning"));
         TextView note = new TextView(this);
-        note.setText("APK DPC phải ở HTTPS URL tải trực tiếp. Checksum là SHA-256 của file APK, Base64 URL-safe.");
+        note.setText("APK DPC phải ở HTTPS URL tải trực tiếp. v1.6 dùng SHA-256 của CHỮ KÝ APK (giống TestDPC) để provisioning ổn định hơn.");
         root.addView(note);
 
         EditText apkUrl = field("HTTPS URL của LongDPC.apk", "");
         String ownChecksum = "";
-        try { ownChecksum = ChecksumUtil.installedApkSha256Base64Url(this); }
+        try { ownChecksum = ChecksumUtil.installedSigningCertSha256Base64Url(this); }
         catch (Exception ignored) {}
-        EditText checksum = field("SHA-256 checksum (URL-safe Base64)", ownChecksum);
+        EditText checksum = field("SHA-256 chữ ký APK (URL-safe Base64)", ownChecksum);
         TextView checksumNote = new TextView(this);
-        checksumNote.setText("Checksum trên được tính từ APK LongDPC đang cài trên máy mẹ. URL phải phục vụ ĐÚNG file APK này; nếu bạn upload APK khác thì phải tính lại checksum.");
+        checksumNote.setText("Checksum trên là SHA-256 của chứng thư ký APK. APK ở URL phải được ký bằng cùng chứng thư với LongDPC đang cài trên máy mẹ.");
         root.addView(checksumNote);
         EditText ssid = field("Wi-Fi SSID", "Longkaca");
         EditText pass = field("Wi-Fi password", "15082020");
@@ -76,15 +76,18 @@ public class MainActivity extends Activity {
                 j.put("android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME",
                         "com.longkaca.dpc/com.longkaca.dpc.LongDeviceAdminReceiver");
                 j.put("android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION", dpc);
-                j.put("android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_CHECKSUM", sum);
-                j.put("android.app.extra.PROVISIONING_WIFI_SSID", ssid.getText().toString());
-                j.put("android.app.extra.PROVISIONING_WIFI_PASSWORD", pass.getText().toString());
-                j.put("android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE", "WPA");
-                j.put("android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED", true);
+                j.put("android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM", sum);
+                String wifiSsid = ssid.getText().toString().trim();
+                String wifiPass = pass.getText().toString();
+                if (!wifiSsid.isEmpty()) {
+                    j.put("android.app.extra.PROVISIONING_WIFI_SSID", wifiSsid);
+                    j.put("android.app.extra.PROVISIONING_WIFI_PASSWORD", wifiPass);
+                    j.put("android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE", "WPA");
+                }
 
                 JSONObject x = new JSONObject();
-                x.put("wifi_ssid", ssid.getText().toString());
-                x.put("wifi_password", pass.getText().toString());
+                x.put("wifi_ssid", wifiSsid);
+                x.put("wifi_password", wifiPass);
                 for (int i=0;i<4;i++) {
                     String u = appUrls.get(i).getText().toString().trim();
                     if (!u.isEmpty() && !u.startsWith("https://")) {

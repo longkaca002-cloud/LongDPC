@@ -47,6 +47,17 @@ for p in java:
     txt=p.read_text()
     ok(txt.count('{')==txt.count('}'), f'unbalanced braces: {p.name}')
 
+# v1.6 provisioning contract checks
+get_mode=(root/'app/src/main/java/com/longkaca/dpc/GetProvisioningModeActivity.java').read_text()
+compliance=(root/'app/src/main/java/com/longkaca/dpc/PolicyComplianceActivity.java').read_text()
+checksum_util=(root/'app/src/main/java/com/longkaca/dpc/ChecksumUtil.java').read_text()
+ok('PROVISIONING_MODE_FULLY_MANAGED_DEVICE' in get_mode, 'fully-managed mode missing')
+ok('EXTRA_PROVISIONING_SKIP_EDUCATION_SCREENS' in get_mode, 'skip education missing')
+ok('setResult(Activity.RESULT_OK, result)' in get_mode, 'GET_PROVISIONING_MODE must return RESULT_OK + Intent')
+ok('setResult(Activity.RESULT_OK, result)' in compliance, 'ADMIN_POLICY_COMPLIANCE must return RESULT_OK + Intent')
+ok('installedSigningCertSha256Base64Url' in checksum_util, 'signature checksum helper missing')
+ok('PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM' in main, 'QR must use signature checksum')
+
 if errors:
     print('FAIL')
     for e in errors: print('-',e)

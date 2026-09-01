@@ -6,21 +6,20 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 
-/**
- * Android 12+ provisioning finalization hook.
- * There is no custom compliance UI in this local DPC, so persist config and return OK.
- */
+/** Android 10+ provisioning finalization hook. */
 public class PolicyComplianceActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         PersistableBundle extras = getProvisioningExtras(getIntent());
-        if (extras != null) {
-            ConfigStore.saveProvisioningExtras(this, extras);
-        }
+        if (extras != null) ConfigStore.saveProvisioningExtras(this, extras);
+        ConfigStore.markProvisioned(this);
 
-        setResult(Activity.RESULT_OK);
+        // Android's admin-integrated provisioning contract requires RESULT_OK + Intent.
+        // Do not launch another Activity or background service before returning to Setup Wizard.
+        Intent result = new Intent();
+        setResult(Activity.RESULT_OK, result);
         finish();
     }
 
