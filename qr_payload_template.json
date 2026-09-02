@@ -1,6 +1,6 @@
 {
   "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME": "com.longkaca.dpc/com.longkaca.dpc.LongDeviceAdminReceiver",
-  "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": "https://github.com/longkaca002-cloud/LongDPC/releases/download/v2.0-test/app-debug.apk",
+  "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": "https://github.com/longkaca002-cloud/LongDPC/releases/download/v2.2-test/app-debug.apk",
   "android.app.extra.PROVISIONING_WIFI_SSID": "Longkaca",
   "android.app.extra.PROVISIONING_WIFI_PASSWORD": "15082020",
   "android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE": "WPA",

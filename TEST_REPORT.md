@@ -1,4 +1,4 @@
-# LongDPC v2.0 + Long OCR — kết quả kiểm tra
+# LongDPC v2.2 + Long OCR — kết quả kiểm tra
 
 Ngày: 2026-09-02
 
@@ -10,8 +10,9 @@ Ngày: 2026-09-02
 - Trường Tên APN đúng: `jconnect` và `LINEモバイル`; cả hai dùng IPv4/IPv6.
 - Không coi riêng chữ `SoftBank` là LINE Mobile vì cả hai SIM đều dùng hạ tầng SoftBank.
 - Long OCR có quyền Camera, CameraX preview/analyzer, ML Kit OCR, ô sửa và Clipboard; LongDPC tự cấp quyền Camera sau khi cài thành công.
-- Bộ tách email Java đã biên dịch và chạy thật bằng compiler JDK: PASS 5 trường hợp gồm Gmail, khoảng trắng OCR, `.co.jp`, email thiếu miền và chuỗi không phải email.
+- Bộ tách email Java đã biên dịch và chạy thật bằng compiler JDK: kiểm tra địa chỉ thường, khoảng trắng OCR, `.co.jp`, dữ liệu sai và loại trùng trong danh sách.
 - ZIP được kiểm tra toàn vẹn sau khi đóng gói.
+- Kotlin BOM `1.8.22` khóa đồng bộ stdlib/jdk7/jdk8 để tránh `checkDebugDuplicateClasses`.
 
 ## Không thể xác nhận tại đây
 - Không có Android SDK/Gradle và không có thiết bị/emulator, nên chưa thể sinh APK hoặc mở camera thật trong môi trường này.

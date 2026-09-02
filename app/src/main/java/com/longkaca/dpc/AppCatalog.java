@@ -4,7 +4,7 @@ public final class AppCatalog {
     private AppCatalog() {}
 
     public static final String DEFAULT_DPC_URL =
-            "https://github.com/longkaca002-cloud/LongDPC/releases/download/v2.0-test/app-debug.apk";
+            "https://github.com/longkaca002-cloud/LongDPC/releases/download/v2.2-test/app-debug.apk";
 
     public static final String DEFAULT_WIFI_SSID = "Longkaca";
     public static final String DEFAULT_WIFI_PASSWORD = "15082020";

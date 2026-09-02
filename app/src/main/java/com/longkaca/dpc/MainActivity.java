@@ -47,9 +47,9 @@ public class MainActivity extends Activity {
     }
 
     private void showMotherMode() {
-        root.addView(title("MÁY MẸ — LongDPC v2.0 — tạo QR provisioning"));
+        root.addView(title("MÁY MẸ — LongDPC v2.2 — tạo QR provisioning"));
         TextView note = new TextView(this);
-        note.setText("v2.0: QR tự nhập Wi-Fi, cài 6 app gồm Gmail + Long OCR, hỗ trợ .apk/.apks và APN jconnect/LINE Mobile.");
+        note.setText("v2.2: TikTok Lite dùng APKS; Long OCR chọn email theo dòng; APN đã sửa.");
         root.addView(note);
 
         EditText apkUrl = field("HTTPS URL của LongDPC.apk",
@@ -130,7 +130,7 @@ public class MainActivity extends Activity {
     }
 
     private void showManagedMode() {
-        root.addView(title("MÁY CON — LongDPC v2.0 — Device Owner"));
+        root.addView(title("MÁY CON — LongDPC v2.2 — Device Owner"));
         EditText ssid = field("Wi-Fi mới", ConfigStore.get(this,"wifi_ssid",AppCatalog.DEFAULT_WIFI_SSID));
         EditText pass = field("Mật khẩu Wi-Fi mới", ConfigStore.get(this,"wifi_password",AppCatalog.DEFAULT_WIFI_PASSWORD));
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);

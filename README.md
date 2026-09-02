@@ -1,4 +1,4 @@
-# LongDPC v2.0 + Long OCR — thiết lập nhanh + APN
+# LongDPC v2.2 + Long OCR — APKS + danh sách email + APN
 
 ## Luồng máy con
 1. Factory reset, chạm 6 lần ở màn hình Welcome và quét QR do máy mẹ tạo.
@@ -27,9 +27,9 @@ Gmail và Long OCR chỉ tự cài khi hai asset `apps-v3` thực sự tồn t�
 
 ## Dùng Long OCR
 1. Mở Long OCR. Khi được cài bởi LongDPC Device Owner, quyền Camera được tự cấp; nếu cài riêng thì cho phép Camera lần đầu.
-2. Đưa địa chỉ email vào khung; app nhận dạng liên tục bằng mô hình OCR nằm trong APK.
-3. Khi thấy email, bấm `GIỮ / QUÉT LẠI`, kiểm tra và sửa ký tự nếu cần.
-4. Bấm `SAO CHÉP EMAIL`, chuyển sang màn hình đăng nhập rồi nhấn giữ và Dán.
+2. Đưa bảng email vào khung; app thêm mỗi email vào một dòng cố định, không nhảy vị trí.
+3. Kiểm tra/sửa đúng dòng rồi bấm `SAO CHÉP`.
+4. Dòng đã dùng đổi thành `ĐÃ COPY ✓`; bấm `XÓA DANH SÁCH` khi chuyển sang bảng khác.
 
 ## Giới hạn Android/OEM
 LongDPC yêu cầu Android bỏ qua education screens và tự trả về `RESULT_OK` ở compliance flow. Màn hình pháp lý, kích hoạt SIM hoặc màn hình bắt buộc riêng của firmware AQUOS/arrows vẫn có thể xuất hiện; DPC không được phép vượt màn hình bắt buộc.

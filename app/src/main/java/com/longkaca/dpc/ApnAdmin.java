@@ -40,9 +40,11 @@ public final class ApnAdmin {
         }
 
         ApnSetting.Builder b = new ApnSetting.Builder()
-                .setApnTypeBitmask(ApnSetting.TYPE_DEFAULT | ApnSetting.TYPE_SUPL)
+                // Android bắt buộc một type nội bộ; người dùng không phải nhập trường này.
+                .setApnTypeBitmask(ApnSetting.TYPE_DEFAULT)
                 .setProtocol(ApnSetting.PROTOCOL_IPV4V6)
-                .setRoamingProtocol(ApnSetting.PROTOCOL_IPV4V6);
+                .setRoamingProtocol(ApnSetting.PROTOCOL_IPV4V6)
+                .setCarrierEnabled(true);
         if (!operator.isEmpty()) b.setOperatorNumeric(operator);
 
         String shown;

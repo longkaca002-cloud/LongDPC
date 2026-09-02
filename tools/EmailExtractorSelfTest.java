@@ -14,6 +14,9 @@ public final class EmailExtractorSelfTest {
         check("abc-123@yahoo.co.jp", "abc-123@yahoo.co.jp");
         check("", "long@gmail");
         check("", "không có email");
-        System.out.println("PASS Long OCR email extraction: 5 cases");
+        if (EmailExtractor.allEmails("a@gmail.com\nb@yahoo.co.jp\na@gmail.com").size() != 2) {
+            throw new AssertionError("Expected two unique emails in stable order");
+        }
+        System.out.println("PASS Long OCR email extraction: 6 cases");
     }
 }

@@ -2,6 +2,10 @@ package com.longkaca.ocr;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 public final class EmailExtractor {
     private static final Pattern EMAIL = Pattern.compile(
@@ -13,17 +17,23 @@ public final class EmailExtractor {
     private EmailExtractor() {}
 
     public static String firstEmail(String text) {
-        if (text == null) return "";
+        List<String> all = allEmails(text);
+        return all.isEmpty() ? "" : all.get(0);
+    }
+
+    public static List<String> allEmails(String text) {
+        Set<String> found = new LinkedHashSet<>();
+        if (text == null) return new ArrayList<>();
         Matcher direct = EMAIL.matcher(text);
-        if (direct.find()) return clean(direct.group());
+        while (direct.find()) found.add(clean(direct.group()));
 
         Matcher spaced = SPACED_EMAIL.matcher(text);
-        if (spaced.find()) {
+        while (spaced.find()) {
             String candidate = spaced.group(1) + "@" + spaced.group(2).replaceAll("\\s+", "");
             Matcher verify = EMAIL.matcher(candidate);
-            if (verify.matches()) return clean(candidate);
+            if (verify.matches()) found.add(clean(candidate));
         }
-        return "";
+        return new ArrayList<>(found);
     }
 
     private static String clean(String value) {
