@@ -6,7 +6,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.widget.Button;
@@ -20,8 +20,10 @@ import android.widget.Toast;
 import androidx.activity.ComponentActivity;
 import androidx.annotation.NonNull;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageProxy;
+import androidx.camera.core.Camera;
+import androidx.camera.core.FocusMeteringAction;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
@@ -34,12 +36,15 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends ComponentActivity {
     private static final int CAMERA_REQUEST = 2001;
@@ -48,6 +53,8 @@ public class MainActivity extends ComponentActivity {
     private LinearLayout emailList;
     private ExecutorService cameraExecutor;
     private TextRecognizer recognizer;
+    private ImageCapture imageCapture;
+    private Button scanButton;
     private final AtomicBoolean processing = new AtomicBoolean(false);
     private final Map<String, Button> emailRows = new LinkedHashMap<>();
 
@@ -74,7 +81,7 @@ public class MainActivity extends ComponentActivity {
         panel.setPadding(dp(14), dp(10), dp(14), dp(14));
         panel.setBackgroundColor(0xEFFFFFFF);
         status = new TextView(this);
-        status.setText("Đưa bảng email vào camera — mỗi email sẽ giữ nguyên một dòng");
+        status.setText("Đưa bảng email vào khung, giữ thẳng và bấm CHỤP VÀ QUÉT");
         status.setTextColor(Color.BLACK);
         status.setTextSize(16);
         panel.addView(status);
@@ -85,12 +92,18 @@ public class MainActivity extends ComponentActivity {
         emailScroll.addView(emailList);
         panel.addView(emailScroll, new LinearLayout.LayoutParams(-1, dp(280)));
 
+        scanButton = new Button(this);
+        scanButton.setText("CHỤP VÀ QUÉT");
+        scanButton.setTextSize(18);
+        scanButton.setOnClickListener(v -> captureAndRecognize());
+        panel.addView(scanButton);
+
         Button clear = new Button(this);
         clear.setText("XÓA DANH SÁCH — QUÉT TỜ KHÁC");
         clear.setOnClickListener(v -> {
             emailRows.clear();
             emailList.removeAllViews();
-            status.setText("Đã xóa — đưa bảng email mới vào camera");
+            status.setText("Đã xóa — đưa bảng mới vào khung rồi bấm CHỤP VÀ QUÉT");
         });
         panel.addView(clear);
 
@@ -106,29 +119,65 @@ public class MainActivity extends ComponentActivity {
                 ProcessCameraProvider provider = future.get();
                 Preview cameraPreview = new Preview.Builder().build();
                 cameraPreview.setSurfaceProvider(preview.getSurfaceProvider());
-                ImageAnalysis analysis = new ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build();
-                analysis.setAnalyzer(cameraExecutor, this::analyze);
+                imageCapture = new ImageCapture.Builder()
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
+                        .setJpegQuality(100)
+                        .build();
                 provider.unbindAll();
-                provider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, cameraPreview, analysis);
+                Camera camera = provider.bindToLifecycle(this, CameraSelector.DEFAULT_BACK_CAMERA, cameraPreview, imageCapture);
+                preview.setOnTouchListener((view, event) -> {
+                    if (event.getAction() != android.view.MotionEvent.ACTION_UP) return true;
+                    FocusMeteringAction focus = new FocusMeteringAction.Builder(
+                            preview.getMeteringPointFactory().createPoint(event.getX(), event.getY()))
+                            .setAutoCancelDuration(3, TimeUnit.SECONDS).build();
+                    camera.getCameraControl().startFocusAndMetering(focus);
+                    status.setText("Đang lấy nét — khi chữ rõ hãy bấm CHỤP VÀ QUÉT");
+                    return true;
+                });
+                status.setText("Camera sẵn sàng — chạm vào bảng để lấy nét rồi bấm CHỤP VÀ QUÉT");
             } catch (Exception e) {
                 runOnUiThread(() -> status.setText("Không mở được camera: " + e.getMessage()));
             }
         }, ContextCompat.getMainExecutor(this));
     }
 
-    private void analyze(ImageProxy proxy) {
-        if (!processing.compareAndSet(false, true)) { proxy.close(); return; }
-        Image media = proxy.getImage();
-        if (media == null) { processing.set(false); proxy.close(); return; }
-        InputImage image = InputImage.fromMediaImage(media, proxy.getImageInfo().getRotationDegrees());
-        recognizer.process(image)
-                .addOnSuccessListener(text -> {
-                    List<String> emails = EmailExtractor.allEmails(text.getText());
-                    if (!emails.isEmpty()) runOnUiThread(() -> addEmails(emails));
-                })
-                .addOnFailureListener(e -> runOnUiThread(() -> status.setText("OCR lỗi: " + e.getMessage())))
-                .addOnCompleteListener(task -> { processing.set(false); proxy.close(); });
+    private void captureAndRecognize() {
+        if (imageCapture == null || !processing.compareAndSet(false, true)) return;
+        scanButton.setEnabled(false);
+        status.setText("Đang chụp ảnh rõ và nhận dạng…");
+        File photo = new File(getCacheDir(), "long_ocr_" + System.currentTimeMillis() + ".jpg");
+        ImageCapture.OutputFileOptions options = new ImageCapture.OutputFileOptions.Builder(photo).build();
+        imageCapture.takePicture(options, cameraExecutor, new ImageCapture.OnImageSavedCallback() {
+            @Override public void onImageSaved(@NonNull ImageCapture.OutputFileResults output) {
+                try {
+                    InputImage image = InputImage.fromFilePath(MainActivity.this, Uri.fromFile(photo));
+                    recognizer.process(image)
+                            .addOnSuccessListener(text -> {
+                                List<String> emails = EmailExtractor.allEmails(text.getText());
+                                runOnUiThread(() -> {
+                                    if (emails.isEmpty()) status.setText("Chưa thấy email — đưa máy gần hơn, đủ sáng rồi chụp lại");
+                                    else addEmails(emails);
+                                });
+                            })
+                            .addOnFailureListener(e -> runOnUiThread(() -> status.setText("OCR lỗi: " + e.getMessage())))
+                            .addOnCompleteListener(task -> finishScan(photo));
+                } catch (IOException e) {
+                    runOnUiThread(() -> status.setText("Không đọc được ảnh vừa chụp: " + e.getMessage()));
+                    finishScan(photo);
+                }
+            }
+
+            @Override public void onError(@NonNull ImageCaptureException exception) {
+                runOnUiThread(() -> status.setText("Không chụp được ảnh: " + exception.getMessage()));
+                finishScan(photo);
+            }
+        });
+    }
+
+    private void finishScan(File photo) {
+        if (photo.exists()) photo.delete();
+        processing.set(false);
+        runOnUiThread(() -> scanButton.setEnabled(true));
     }
 
     private void addEmails(List<String> emails) {

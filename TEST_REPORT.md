@@ -1,5 +1,8 @@
 # LongDPC v2.2 + Long OCR — kết quả kiểm tra
 
+- Long OCR 1.2 dùng ảnh JPEG chất lượng cao thay cho OCR liên tục.
+- Có chạm để lấy nét, nút `CHỤP VÀ QUÉT`, danh sách email và trạng thái `ĐÃ COPY`.
+
 Ngày: 2026-09-02
 
 ## PASS trong môi trường hiện tại

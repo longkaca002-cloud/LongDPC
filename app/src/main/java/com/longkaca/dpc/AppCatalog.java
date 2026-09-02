@@ -22,13 +22,13 @@ public final class AppCatalog {
             "com.longkaca.ocr"
     };
 
-    // Bốn app cũ giữ nguyên apps-v2; Gmail/Lens dùng tag apps-v3.
+    // Toàn bộ ứng dụng phụ dùng chung một release apps-v2 để tránh URL 404.
     public static final String[] DEFAULT_URLS = {
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/tiktok.apks",
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/tiktok-lite.apks",
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/line.apks",
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/autoscroll.apk",
-            "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v3/gmail.apks",
-            "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v3/long-ocr.apk"
+            "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/gmail.apks",
+            "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/long-ocr.apk"
     };
 }

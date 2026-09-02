@@ -20,15 +20,15 @@ Override APN cần Android 9+ và LongDPC phải là Device Owner. Chế độ t
 - `apps-v2/tiktok-lite.apks`
 - `apps-v2/line.apks`
 - `apps-v2/autoscroll.apk`
-- `apps-v3/gmail.apks`
-- `apps-v3/long-ocr.apk`
+- `apps-v2/gmail.apks`
+- `apps-v2/long-ocr.apk`
 
-Gmail và Long OCR chỉ tự cài khi hai asset `apps-v3` thực sự tồn tại. Long OCR được build từ module `longocr` trong project; không cần tài khoản Google để sử dụng và không có quảng cáo. Có thể sửa URL ngay trên máy mẹ; các URL và Wi-Fi được lưu lại.
+Gmail và Long OCR chỉ tự cài khi hai asset tương ứng trong `apps-v2` thực sự tồn tại. Long OCR được build từ module `longocr` trong project; không cần tài khoản Google để sử dụng và không có quảng cáo. Có thể sửa URL ngay trên máy mẹ; các URL và Wi-Fi được lưu lại.
 
 ## Dùng Long OCR
 1. Mở Long OCR. Khi được cài bởi LongDPC Device Owner, quyền Camera được tự cấp; nếu cài riêng thì cho phép Camera lần đầu.
 2. Đưa bảng email vào khung; app thêm mỗi email vào một dòng cố định, không nhảy vị trí.
-3. Kiểm tra/sửa đúng dòng rồi bấm `SAO CHÉP`.
+3. Giữ máy thẳng, đủ sáng rồi bấm `CHỤP VÀ QUÉT`; kiểm tra/sửa đúng dòng và bấm `SAO CHÉP`.
 4. Dòng đã dùng đổi thành `ĐÃ COPY ✓`; bấm `XÓA DANH SÁCH` khi chuyển sang bảng khác.
 
 ## Giới hạn Android/OEM
