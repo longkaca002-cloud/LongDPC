@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.widget.*;
 
 import org.json.JSONObject;
@@ -14,13 +16,6 @@ import java.util.List;
 
 public class MainActivity extends Activity {
     private LinearLayout root;
-    private final String[] appNames = {"TikTok Nhật", "TikTok Lite Nhật", "LINE", "Auto Scroll"};
-    private final String[] packages = {
-            "com.ss.android.ugc.trill",
-            "com.ss.android.ugc.tiktok.lite",
-            "jp.naver.line.android",
-            "com.tafayor.autoscrolling"
-    };
 
     @Override public void onCreate(Bundle b) {
         super.onCreate(b);
@@ -41,26 +36,54 @@ public class MainActivity extends Activity {
     private EditText field(String hint, String value) { EditText e=new EditText(this); e.setHint(hint); e.setText(value); e.setSingleLine(true); root.addView(e); return e; }
     private Button button(String text) { Button b=new Button(this); b.setText(text); root.addView(b); return b; }
 
+    private void persist(EditText e, String key) {
+        e.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                ConfigStore.put(MainActivity.this, key, s == null ? "" : s.toString());
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+    }
+
     private void showMotherMode() {
-        root.addView(title("MÁY MẸ — tạo QR provisioning"));
+        root.addView(title("MÁY MẸ — LongDPC v2.0 — tạo QR provisioning"));
         TextView note = new TextView(this);
-        note.setText("APK DPC phải ở HTTPS URL tải trực tiếp. v1.6 dùng SHA-256 của CHỮ KÝ APK (giống TestDPC) để provisioning ổn định hơn.");
+        note.setText("v2.0: QR tự nhập Wi-Fi, cài 6 app gồm Gmail + Long OCR, hỗ trợ .apk/.apks và APN jconnect/LINE Mobile.");
         root.addView(note);
 
-        EditText apkUrl = field("HTTPS URL của LongDPC.apk", "");
+        EditText apkUrl = field("HTTPS URL của LongDPC.apk",
+                ConfigStore.get(this,"mother_dpc_url", AppCatalog.DEFAULT_DPC_URL));
+        persist(apkUrl, "mother_dpc_url");
+
         String ownChecksum = "";
         try { ownChecksum = ChecksumUtil.installedSigningCertSha256Base64Url(this); }
         catch (Exception ignored) {}
         EditText checksum = field("SHA-256 chữ ký APK (URL-safe Base64)", ownChecksum);
         TextView checksumNote = new TextView(this);
-        checksumNote.setText("Checksum trên là SHA-256 của chứng thư ký APK. APK ở URL phải được ký bằng cùng chứng thư với LongDPC đang cài trên máy mẹ.");
+        checksumNote.setText("APK tại URL phải là đúng build được ký cùng chứng thư với LongDPC đang cài trên máy mẹ.");
         root.addView(checksumNote);
-        EditText ssid = field("Wi-Fi SSID", "Longkaca");
-        EditText pass = field("Wi-Fi password", "15082020");
+
+        EditText ssid = field("Wi-Fi SSID",
+                ConfigStore.get(this,"mother_wifi_ssid", AppCatalog.DEFAULT_WIFI_SSID));
+        EditText pass = field("Wi-Fi password",
+                ConfigStore.get(this,"mother_wifi_password", AppCatalog.DEFAULT_WIFI_PASSWORD));
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        persist(ssid, "mother_wifi_ssid");
+        persist(pass, "mother_wifi_password");
 
         List<EditText> appUrls = new ArrayList<>();
-        for (int i=0;i<4;i++) appUrls.add(field("URL APK HTTPS — " + appNames[i] + " (" + packages[i] + ")", ""));
+        for (int i=0;i<AppCatalog.NAMES.length;i++) {
+            EditText e = field("URL HTTPS — " + AppCatalog.NAMES[i] + " (" + AppCatalog.PACKAGES[i] + ")",
+                    ConfigStore.get(this,"mother_apk_"+i+"_url", AppCatalog.DEFAULT_URLS[i]));
+            persist(e, "mother_apk_"+i+"_url");
+            appUrls.add(e);
+        }
+
+        TextView splitNote = new TextView(this);
+        splitNote.setText("TikTok / TikTok Lite / LINE nên dùng .apks đầy đủ split. Auto Scroll dùng .apk đơn.");
+        root.addView(splitNote);
+
         ImageView qr = new ImageView(this); root.addView(qr, new LinearLayout.LayoutParams(-1, dp(420)));
         Button make = button("TẠO QR PROVISIONING");
         make.setOnClickListener(v -> {
@@ -77,6 +100,7 @@ public class MainActivity extends Activity {
                         "com.longkaca.dpc/com.longkaca.dpc.LongDeviceAdminReceiver");
                 j.put("android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION", dpc);
                 j.put("android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM", sum);
+                j.put("android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED", true);
                 String wifiSsid = ssid.getText().toString().trim();
                 String wifiPass = pass.getText().toString();
                 if (!wifiSsid.isEmpty()) {
@@ -88,15 +112,17 @@ public class MainActivity extends Activity {
                 JSONObject x = new JSONObject();
                 x.put("wifi_ssid", wifiSsid);
                 x.put("wifi_password", wifiPass);
-                for (int i=0;i<4;i++) {
+                x.put("apn_profile", ApnAdmin.PROFILE_AUTO);
+                for (int i=0;i<AppCatalog.NAMES.length;i++) {
                     String u = appUrls.get(i).getText().toString().trim();
                     if (!u.isEmpty() && !u.startsWith("https://")) {
-                        throw new IllegalArgumentException(appNames[i] + " phải là URL HTTPS");
+                        throw new IllegalArgumentException(AppCatalog.NAMES[i] + " phải là URL HTTPS");
                     }
                     x.put("apk_"+i+"_url", u);
                 }
                 j.put("android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE", x);
                 Bitmap bmp = QrUtil.make(j.toString(), 1000); qr.setImageBitmap(bmp);
+                Toast.makeText(this,"Đã tạo QR — các ô đã được lưu",Toast.LENGTH_SHORT).show();
             } catch(Exception ex) {
                 Toast.makeText(this, ex.getMessage() == null ? ex.toString() : ex.getMessage(), Toast.LENGTH_LONG).show();
             }
@@ -104,9 +130,9 @@ public class MainActivity extends Activity {
     }
 
     private void showManagedMode() {
-        root.addView(title("MÁY CON — Device Owner đang hoạt động"));
-        EditText ssid = field("Wi-Fi mới", ConfigStore.get(this,"wifi_ssid","Longkaca"));
-        EditText pass = field("Mật khẩu Wi-Fi mới", ConfigStore.get(this,"wifi_password","15082020"));
+        root.addView(title("MÁY CON — LongDPC v2.0 — Device Owner"));
+        EditText ssid = field("Wi-Fi mới", ConfigStore.get(this,"wifi_ssid",AppCatalog.DEFAULT_WIFI_SSID));
+        EditText pass = field("Mật khẩu Wi-Fi mới", ConfigStore.get(this,"wifi_password",AppCatalog.DEFAULT_WIFI_PASSWORD));
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         Button wifi = button("ĐỔI / THÊM WI-FI");
         wifi.setOnClickListener(v -> {
@@ -126,21 +152,32 @@ public class MainActivity extends Activity {
             }).start();
         });
 
-        root.addView(title("Cài APK"));
+        root.addView(title("APN SIM"));
+        TextView apnInfo = new TextView(this);
+        apnInfo.setText("Cả hai SIM đều chạy hạ tầng SoftBank. Tự động chỉ áp dụng khi đọc được chính xác jconnect hoặc LINE; nếu máy chỉ hiện SoftBank, hãy bấm đúng loại SIM.");
+        root.addView(apnInfo);
+        Button apnAuto = button("TỰ NHẬN DIỆN SIM VÀ ÁP APN");
+        apnAuto.setOnClickListener(v -> applyApn(ApnAdmin.PROFILE_AUTO));
+        Button apnJconnect = button("ÁP APN — Tên: jconnect");
+        apnJconnect.setOnClickListener(v -> applyApn(ApnAdmin.PROFILE_JCONNECT));
+        Button apnLine = button("ÁP APN — Tên: LINEモバイル");
+        apnLine.setOnClickListener(v -> applyApn(ApnAdmin.PROFILE_LINE_SOFTBANK));
+
+        root.addView(title("Cài APK / APKS"));
         List<EditText> urls = new ArrayList<>();
-        for(int i=0;i<4;i++) {
+        for(int i=0;i<AppCatalog.NAMES.length;i++) {
             final int idx = i;
-            EditText e = field("URL APK HTTPS — "+appNames[i], ConfigStore.get(this,"apk_"+i+"_url",""));
+            EditText e = field("URL HTTPS — "+AppCatalog.NAMES[i], ConfigStore.get(this,"apk_"+i+"_url",""));
             urls.add(e);
-            Button one = button("CÀI RIÊNG — " + appNames[i]);
+            Button one = button("CÀI RIÊNG — " + AppCatalog.NAMES[i]);
             one.setOnClickListener(v -> installSingleFromField(e, idx));
         }
         Button install = button("CÀI TẤT CẢ URL KHÔNG TRỐNG");
         install.setOnClickListener(v -> installFromFields(urls));
 
-        Button clear = button("XÓA 4 URL APP ĐÃ LƯU");
+        Button clear = button("XÓA URL APP ĐÃ LƯU");
         clear.setOnClickListener(v -> {
-            for (int i=0;i<4;i++) {
+            for (int i=0;i<AppCatalog.NAMES.length;i++) {
                 ConfigStore.put(this,"apk_"+i+"_url","");
                 urls.get(i).setText("");
             }
@@ -149,26 +186,25 @@ public class MainActivity extends Activity {
         });
     }
 
+    private void applyApn(String profile) {
+        try {
+            String result = ApnAdmin.apply(this, profile);
+            Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "Không áp được APN: " + (e.getMessage() == null ? e : e.getMessage()), Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void maybeAutoInstall() {
-        // Chỉ tự cài khi chính provisioning QR hiện tại yêu cầu.
-        // Bản cũ đọc URL lưu từ lần trước nên có thể tự thử TikTok cũ và báo 404.
         if (!ConfigStore.isAutoInstallRequested(this)) return;
         if (ConfigStore.isAutoInstallStarted(this)) return;
-
-        boolean any = false;
-        for (int i=0;i<4;i++) {
-            if (!ConfigStore.get(this,"apk_"+i+"_url","").trim().isEmpty()) { any = true; break; }
-        }
-        if (!any) return;
-
-        ConfigStore.markAutoInstallStarted(this);
-        new Thread(() -> installSavedUrls(false)).start();
+        AutoInstallScheduler.schedule(this);
     }
 
     private void installSingleFromField(EditText urlField, int i) {
         String u = urlField.getText().toString().trim();
         if (u.isEmpty()) {
-            Toast.makeText(this,"Chưa có URL cho " + appNames[i],Toast.LENGTH_LONG).show();
+            Toast.makeText(this,"Chưa có URL cho " + AppCatalog.NAMES[i],Toast.LENGTH_LONG).show();
             return;
         }
         if (!u.startsWith("https://")) {
@@ -178,33 +214,35 @@ public class MainActivity extends Activity {
         ConfigStore.put(this,"apk_"+i+"_url",u);
         new Thread(() -> {
             try {
-                ApkInstaller.downloadAndInstall(this,u,appNames[i],packages[i]);
+                ApkInstaller.downloadAndInstall(this,u,AppCatalog.NAMES[i],AppCatalog.PACKAGES[i]);
             } catch(Exception e) {
                 final String msg = e.getMessage() == null ? e.toString() : e.getMessage();
-                runOnUiThread(() -> Toast.makeText(this,"Lỗi "+appNames[i]+": "+msg,Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> Toast.makeText(this,"Lỗi "+AppCatalog.NAMES[i]+": "+msg,Toast.LENGTH_LONG).show());
             }
         }).start();
     }
 
     private void installFromFields(List<EditText> urls) {
-        for(int i=0;i<4;i++) {
+        for(int i=0;i<AppCatalog.NAMES.length;i++) {
             ConfigStore.put(this,"apk_"+i+"_url",urls.get(i).getText().toString().trim());
         }
+        ConfigStore.clearAutoInstallState(this);
+        // Manual install: run immediately rather than waiting for a JobScheduler window.
         new Thread(() -> installSavedUrls(true)).start();
     }
 
     private void installSavedUrls(boolean reportEmpty) {
         boolean didAny = false;
-        for(int i=0;i<4;i++) {
+        for(int i=0;i<AppCatalog.NAMES.length;i++) {
             final int idx=i;
             String u=ConfigStore.get(this,"apk_"+i+"_url","").trim();
             if(u.isEmpty()) continue;
             didAny = true;
             try {
-                ApkInstaller.downloadAndInstall(this,u,appNames[i],packages[i]);
+                ApkInstaller.downloadAndInstall(this,u,AppCatalog.NAMES[i],AppCatalog.PACKAGES[i]);
             } catch(Exception e) {
                 final String msg = e.getMessage() == null ? e.toString() : e.getMessage();
-                runOnUiThread(() -> Toast.makeText(this,"Lỗi "+appNames[idx]+": "+msg,Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> Toast.makeText(this,"Lỗi "+AppCatalog.NAMES[idx]+": "+msg,Toast.LENGTH_LONG).show());
             }
         }
         if (!didAny && reportEmpty) {

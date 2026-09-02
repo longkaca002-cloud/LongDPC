@@ -19,9 +19,13 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.2'
-      - name: Build debug APK
-        run: gradle :app:assembleDebug --stacktrace
+      - name: Build and test both apps
+        run: gradle :app:assembleDebug :longocr:testDebugUnitTest :longocr:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: LongDPC-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LongOCR-debug-apk
+          path: longocr/build/outputs/apk/debug/longocr-debug.apk

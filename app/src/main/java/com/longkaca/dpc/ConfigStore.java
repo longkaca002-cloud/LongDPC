@@ -13,8 +13,9 @@ public final class ConfigStore {
         SharedPreferences.Editor e = prefs(c).edit();
         e.putString("wifi_ssid", safe(b.getString("wifi_ssid")));
         e.putString("wifi_password", safe(b.getString("wifi_password")));
+        e.putString("apn_profile", safe(b.getString("apn_profile")));
         boolean anyAppUrl = false;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < AppCatalog.NAMES.length; i++) {
             String url = safe(b.getString("apk_" + i + "_url")).trim();
             e.putString("apk_" + i + "_url", url);
             if (!url.isEmpty()) anyAppUrl = true;

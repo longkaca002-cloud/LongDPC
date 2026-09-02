@@ -11,6 +11,7 @@ public class ProvisioningSuccessActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ConfigStore.markProvisioned(this);
+        AutoInstallScheduler.schedule(this);
 
         // Android 8-9 don't have the admin-integrated compliance flow.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {

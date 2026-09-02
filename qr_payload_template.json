@@ -1,6 +1,6 @@
 {
   "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME": "com.longkaca.dpc/com.longkaca.dpc.LongDeviceAdminReceiver",
-  "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": "https://YOUR-SERVER/LongDPC.apk",
+  "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION": "https://github.com/longkaca002-cloud/LongDPC/releases/download/v2.0-test/app-debug.apk",
   "android.app.extra.PROVISIONING_WIFI_SSID": "Longkaca",
   "android.app.extra.PROVISIONING_WIFI_PASSWORD": "15082020",
   "android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE": "WPA",
@@ -8,10 +8,13 @@
   "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE": {
     "wifi_ssid": "Longkaca",
     "wifi_password": "15082020",
-    "apk_0_url": "",
-    "apk_1_url": "",
-    "apk_2_url": "",
-    "apk_3_url": ""
+    "apn_profile": "auto",
+    "apk_0_url": "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/tiktok.apks",
+    "apk_1_url": "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/tiktok-lite.apks",
+    "apk_2_url": "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/line.apks",
+    "apk_3_url": "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/autoscroll.apk",
+    "apk_4_url": "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v3/gmail.apks",
+    "apk_5_url": "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v3/long-ocr.apk"
   },
   "android.app.extra.PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM": "SIGNATURE_SHA256_URLSAFE_BASE64"
 }

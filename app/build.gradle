@@ -8,8 +8,8 @@ android {
         applicationId 'com.longkaca.dpc'
         minSdk 26
         targetSdk 34
-        versionCode 8
-        versionName '1.7-app-install-fix'
+        versionCode 11
+        versionName '2.0-long-ocr'
     }
 }
 

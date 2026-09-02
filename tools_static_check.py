@@ -1,62 +1,87 @@
 from pathlib import Path
-import json, re, sys, xml.etree.ElementTree as ET
+import json, sys, xml.etree.ElementTree as ET
 root=Path(__file__).resolve().parent
 errors=[]
 
 def ok(cond,msg):
     if not cond: errors.append(msg)
 
-# XML
-for p in [root/'app/src/main/AndroidManifest.xml', *list((root/'app/src/main/res').rglob('*.xml'))]:
+for p in [root/'app/src/main/AndroidManifest.xml', root/'longocr/src/main/AndroidManifest.xml',
+          *list((root/'app/src/main/res').rglob('*.xml')),
+          *list((root/'longocr/src/main/res').rglob('*.xml'))]:
     try: ET.parse(p)
     except Exception as e: errors.append(f'XML {p}: {e}')
 
-# JSON
 try: json.loads((root/'qr_payload_template.json').read_text())
 except Exception as e: errors.append(f'QR JSON: {e}')
 
-# Gradle/package consistency
 app_gradle=(root/'app/build.gradle').read_text()
 manifest=(root/'app/src/main/AndroidManifest.xml').read_text()
 java=list((root/'app/src/main/java/com/longkaca/dpc').glob('*.java'))
+main=(root/'app/src/main/java/com/longkaca/dpc/MainActivity.java').read_text()
+catalog=(root/'app/src/main/java/com/longkaca/dpc/AppCatalog.java').read_text()
+all_app_text=main+'\n'+catalog
+
 ok("namespace 'com.longkaca.dpc'" in app_gradle, 'namespace mismatch')
 ok("applicationId 'com.longkaca.dpc'" in app_gradle, 'applicationId mismatch')
+ok("versionCode 11" in app_gradle, 'versionCode must be 11')
+ok("versionName '2.0-long-ocr'" in app_gradle, 'versionName mismatch')
 ok('android.app.action.GET_PROVISIONING_MODE' in manifest, 'missing GET_PROVISIONING_MODE')
 ok('android.app.action.ADMIN_POLICY_COMPLIANCE' in manifest, 'missing ADMIN_POLICY_COMPLIANCE')
 ok('android.app.action.PROVISIONING_SUCCESSFUL' in manifest, 'missing PROVISIONING_SUCCESSFUL')
 ok('android.permission.BIND_DEVICE_ADMIN' in manifest, 'missing BIND_DEVICE_ADMIN')
+ok('AutoInstallJobService' in manifest, 'AutoInstallJobService missing from manifest')
+ok('BIND_JOB_SERVICE' in manifest, 'JobService permission missing')
 ok('com.longkaca.dpc/com.longkaca.dpc.LongDeviceAdminReceiver' in (root/'qr_payload_template.json').read_text(), 'QR admin component mismatch')
+
 for p in java:
     txt=p.read_text()
     ok(txt.startswith('package com.longkaca.dpc;'), f'package mismatch: {p.name}')
+    ok(txt.count('{')==txt.count('}'), f'unbalanced braces: {p.name}')
 
-
-main=(root/'app/src/main/java/com/longkaca/dpc/MainActivity.java').read_text()
 for pkg in [
     'com.ss.android.ugc.trill',
     'com.ss.android.ugc.tiktok.lite',
     'jp.naver.line.android',
     'com.tafayor.autoscrolling',
+    'com.google.android.gm',
+    'com.longkaca.ocr',
 ]:
-    ok(pkg in main, f'missing expected app package: {pkg}')
+    ok(pkg in all_app_text, f'missing expected app package: {pkg}')
 for old in ['com.zhiliaoapp.musically','com.zhiliaoapp.musically.go','com.truedevelopersstudio.automatictap.autoclicker']:
-    ok(old not in main, f'old app package still present: {old}')
+    ok(old not in all_app_text, f'old app package still present: {old}')
 
-# Cheap syntax sanity checks that catch accidental unbalanced braces/comments/strings poorly, not a compiler replacement.
-for p in java:
-    txt=p.read_text()
-    ok(txt.count('{')==txt.count('}'), f'unbalanced braces: {p.name}')
-
-# v1.6 provisioning contract checks
 get_mode=(root/'app/src/main/java/com/longkaca/dpc/GetProvisioningModeActivity.java').read_text()
 compliance=(root/'app/src/main/java/com/longkaca/dpc/PolicyComplianceActivity.java').read_text()
 checksum_util=(root/'app/src/main/java/com/longkaca/dpc/ChecksumUtil.java').read_text()
+apk_installer=(root/'app/src/main/java/com/longkaca/dpc/ApkInstaller.java').read_text()
+auto_job=(root/'app/src/main/java/com/longkaca/dpc/AutoInstallJobService.java').read_text()
+install_result=(root/'app/src/main/java/com/longkaca/dpc/InstallResultReceiver.java').read_text()
+
 ok('PROVISIONING_MODE_FULLY_MANAGED_DEVICE' in get_mode, 'fully-managed mode missing')
 ok('EXTRA_PROVISIONING_SKIP_EDUCATION_SCREENS' in get_mode, 'skip education missing')
 ok('setResult(Activity.RESULT_OK, result)' in get_mode, 'GET_PROVISIONING_MODE must return RESULT_OK + Intent')
 ok('setResult(Activity.RESULT_OK, result)' in compliance, 'ADMIN_POLICY_COMPLIANCE must return RESULT_OK + Intent')
 ok('installedSigningCertSha256Base64Url' in checksum_util, 'signature checksum helper missing')
 ok('PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM' in main, 'QR must use signature checksum')
+
+ok('.apks' in apk_installer, 'v1.8 .apks detection missing')
+ok('ZipFile' in apk_installer, 'v1.8 ZipFile split reader missing')
+ok('base.apk' in apk_installer, 'v1.8 base.apk validation missing')
+ok('session.openWrite' in apk_installer, 'PackageInstaller session writes missing')
+ok('apps-v2/tiktok.apks' in catalog, 'default TikTok APKS URL missing')
+ok('apps-v2/tiktok-lite.apks' in catalog, 'default TikTok Lite APKS URL missing')
+ok('apps-v2/line.apks' in catalog, 'default LINE APKS URL missing')
+ok('apps-v2/autoscroll.apk' in catalog, 'default Auto Scroll APK URL missing')
+ok('mother_dpc_url' in main, 'mother DPC URL persistence missing')
+ok('mother_wifi_ssid' in main, 'mother Wi-Fi persistence missing')
+ok('mother_apk_' in main, 'mother app URL persistence missing')
+ok('ApkInstaller.downloadAndInstall' in auto_job, 'background auto installer missing')
+ok('PERMISSION_GRANT_STATE_GRANTED' in install_result and 'com.longkaca.ocr' in install_result,
+   'Long OCR automatic camera permission grant missing')
+apn=(root/'app/src/main/java/com/longkaca/dpc/ApnAdmin.java').read_text()
+ok('addOverrideApn' in apn and 'setOverrideApnsEnabled' in apn, 'override APN support missing')
+ok('plus.4g' in apn and 'line.me' in apn, 'APN profiles missing')
 
 if errors:
     print('FAIL')
@@ -65,5 +90,16 @@ if errors:
 print('PASS static project checks')
 print(f'Java files: {len(java)}')
 print('Package: com.longkaca.dpc')
-print('Provisioning activities: present')
-print('QR JSON/XML: valid')
+ocr_manifest=(root/'longocr/src/main/AndroidManifest.xml').read_text()
+ocr_main=(root/'longocr/src/main/java/com/longkaca/ocr/MainActivity.java').read_text()
+ocr_extractor=(root/'longocr/src/main/java/com/longkaca/ocr/EmailExtractor.java').read_text()
+ok('android.permission.CAMERA' in ocr_manifest, 'Long OCR camera permission missing')
+ok('TextRecognition.getClient' in ocr_main, 'ML Kit OCR client missing')
+ok('SAO CHÉP EMAIL' in ocr_main, 'Long OCR copy button missing')
+ok('ClipboardManager' in ocr_main, 'Long OCR clipboard support missing')
+ok('Pattern.compile' in ocr_extractor, 'Long OCR email extractor missing')
+
+print('Version: 2.0-long-ocr (11)')
+print('Split APK/APKS installer: present')
+print('Persistent mother defaults: present')
+print('Background auto-install JobService: present')

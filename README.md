@@ -1,23 +1,38 @@
-# LongDPC v1.7 — App install fix
+# LongDPC v2.0 + Long OCR — thiết lập nhanh + APN
 
-- Giữ provisioning fix của v1.6.
-- Không tự chạy URL app cũ khi chỉ mở LongDPC.
-- Auto-install chỉ chạy khi QR provisioning hiện tại mang URL app.
-- Có nút cài riêng từng app để test từng URL.
-- Có nút xóa 4 URL app đã lưu.
+## Luồng máy con
+1. Factory reset, chạm 6 lần ở màn hình Welcome và quét QR do máy mẹ tạo.
+2. QR tự nhập Wi-Fi đã chọn (mặc định `Longkaca` / `15082020`) và tải LongDPC.
+3. LongDPC trở thành Device Owner, yêu cầu Android bỏ qua màn hình hướng dẫn có thể bỏ qua.
+4. Khi có mạng, JobScheduler cài lần lượt TikTok Nhật, TikTok Lite Nhật, LINE, Auto Scroll, Gmail và Long OCR.
+5. LongDPC thử nhận diện APN. Nếu không chắc chắn, mở LongDPC và bấm `JCONNECT` hoặc `LINE MOBILE (SOFTBANK)`.
 
-# LongDPC v1.6 provisioning-fix — AQUOS / arrows
+## APN có sẵn
+- Tên `jconnect`: APN `plus.4g`, user `plus`, password `4g`, CHAP, IPv4/IPv6.
+- Tên `LINEモバイル`: APN `line.me`, user `line@line`, password `line`, PAP hoặc CHAP, IPv4/IPv6.
 
-Bản này tập trung sửa luồng QR Device Owner sau khi TestDPC chính thức đã provision được trên máy thử.
+Cả hai loại SIM đều chạy trên hạ tầng SoftBank. Vì vậy chữ `SoftBank` không được dùng để tự phân biệt; nếu máy không trả về đúng tên MVNO thì người dùng chọn một trong hai nút.
 
-Thay đổi chính:
-- Tự trả `PROVISIONING_MODE_FULLY_MANAGED_DEVICE`; không hiển thị màn chọn mode.
-- Trả `EXTRA_PROVISIONING_SKIP_EDUCATION_SCREENS=true`.
-- Chuyển tiếp `PROVISIONING_ADMIN_EXTRAS_BUNDLE` từ GET_PROVISIONING_MODE sang compliance.
-- `ADMIN_POLICY_COMPLIANCE` trả đúng `setResult(RESULT_OK, Intent)` rồi `finish()`.
-- Không tự mở Activity khác trong luồng compliance Android 10+.
-- QR dùng `PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM` giống TestDPC thay vì hash toàn file APK.
-- Wi-Fi chỉ được nhúng QR khi SSID không trống.
-- App thứ 4: Auto Scroll `com.tafayor.autoscrolling`.
+Override APN cần Android 9+ và LongDPC phải là Device Owner. Chế độ tự động không đoán bừa: nếu tên nhà mạng không nhận diện chắc chắn, app yêu cầu bấm đúng nút.
 
-Build: compileSdk 34 / targetSdk 34 / minSdk 26 / AGP 8.2.2 / JDK 17.
+## File app cần host bằng HTTPS trực tiếp
+- `apps-v2/tiktok.apks`
+- `apps-v2/tiktok-lite.apks`
+- `apps-v2/line.apks`
+- `apps-v2/autoscroll.apk`
+- `apps-v3/gmail.apks`
+- `apps-v3/long-ocr.apk`
+
+Gmail và Long OCR chỉ tự cài khi hai asset `apps-v3` thực sự tồn tại. Long OCR được build từ module `longocr` trong project; không cần tài khoản Google để sử dụng và không có quảng cáo. Có thể sửa URL ngay trên máy mẹ; các URL và Wi-Fi được lưu lại.
+
+## Dùng Long OCR
+1. Mở Long OCR. Khi được cài bởi LongDPC Device Owner, quyền Camera được tự cấp; nếu cài riêng thì cho phép Camera lần đầu.
+2. Đưa địa chỉ email vào khung; app nhận dạng liên tục bằng mô hình OCR nằm trong APK.
+3. Khi thấy email, bấm `GIỮ / QUÉT LẠI`, kiểm tra và sửa ký tự nếu cần.
+4. Bấm `SAO CHÉP EMAIL`, chuyển sang màn hình đăng nhập rồi nhấn giữ và Dán.
+
+## Giới hạn Android/OEM
+LongDPC yêu cầu Android bỏ qua education screens và tự trả về `RESULT_OK` ở compliance flow. Màn hình pháp lý, kích hoạt SIM hoặc màn hình bắt buộc riêng của firmware AQUOS/arrows vẫn có thể xuất hiện; DPC không được phép vượt màn hình bắt buộc.
+
+## Build
+Build bằng AndroidIDE/JDK 17 + SDK 34 hoặc GitHub Actions. APK tại URL provisioning phải được ký bằng đúng chứng thư mà máy mẹ dùng để tạo checksum.

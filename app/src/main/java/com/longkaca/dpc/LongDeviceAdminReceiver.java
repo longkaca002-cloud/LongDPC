@@ -22,6 +22,7 @@ public class LongDeviceAdminReceiver extends DeviceAdminReceiver {
                 context.getSystemService(Context.DEVICE_POLICY_SERVICE);
         Log.i(TAG, "Provisioning complete; Device Owner=" +
                 (dpm != null && dpm.isDeviceOwnerApp(context.getPackageName())));
+        AutoInstallScheduler.schedule(context);
         // Do not launch UI from this broadcast. Android 8+ sends ACTION_PROVISIONING_SUCCESSFUL
         // to the new owner; ProvisioningSuccessActivity handles the post-setup launch.
     }

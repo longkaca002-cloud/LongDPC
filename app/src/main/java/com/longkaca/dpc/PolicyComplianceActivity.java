@@ -21,6 +21,9 @@ public class PolicyComplianceActivity extends Activity {
         Intent result = new Intent();
         setResult(Activity.RESULT_OK, result);
         finish();
+
+        // Schedule only; JobScheduler waits for network and runs outside Setup Wizard UI.
+        AutoInstallScheduler.schedule(this);
     }
 
     @SuppressWarnings("deprecation")
