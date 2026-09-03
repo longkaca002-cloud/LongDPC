@@ -1,4 +1,6 @@
 import com.longkaca.ocr.EmailExtractor;
+import java.util.Arrays;
+import java.util.List;
 
 public final class EmailExtractorSelfTest {
     private static void check(String expected, String input) {
@@ -17,6 +19,16 @@ public final class EmailExtractorSelfTest {
         if (EmailExtractor.allEmails("a@gmail.com\nb@yahoo.co.jp\na@gmail.com").size() != 2) {
             throw new AssertionError("Expected two unique emails in stable order");
         }
-        System.out.println("PASS Long OCR email extraction: 6 cases");
+        List<String> wrapped = EmailExtractor.usEmailsFromLines(Arrays.asList(
+                "FirstUser@some-domain", ".us|password", "SecondUser", "@other.mail.us|password"));
+        if (!wrapped.equals(Arrays.asList("FirstUser@some-domain.us", "SecondUser@other.mail.us"))) {
+            throw new AssertionError("Wrapped .us extraction failed: " + wrapped);
+        }
+        List<String> generic = EmailExtractor.usEmailsFromLines(Arrays.asList(
+                "ThirdUser@different.us|password"));
+        if (!generic.equals(Arrays.asList("ThirdUser@different.us"))) {
+            throw new AssertionError("Generic .us extraction failed: " + generic);
+        }
+        System.out.println("PASS Long OCR email extraction: 8 cases");
     }
 }

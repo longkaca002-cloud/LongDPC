@@ -1,38 +1,33 @@
-# LongDPC v2.4 + Long OCR 1.3 — chọn từng hàng văn bản
+# LongDPC v2.5 + Long OCR 1.4
 
-## Luồng máy con
-1. Factory reset, chạm 6 lần ở màn hình Welcome và quét QR do máy mẹ tạo.
-2. QR tự nhập Wi-Fi đã chọn (mặc định `Longkaca` / `15082020`) và tải LongDPC.
-3. LongDPC trở thành Device Owner, yêu cầu Android bỏ qua màn hình hướng dẫn có thể bỏ qua.
-4. Khi có mạng, JobScheduler cài lần lượt TikTok Nhật, TikTok Lite Nhật, LINE, Auto Scroll, Gmail và Long OCR.
-5. LongDPC thử nhận diện APN. Nếu không chắc chắn, mở LongDPC và bấm `JCONNECT` hoặc `LINE MOBILE (SOFTBANK)`.
+## Mặc định máy mẹ
 
-## APN có sẵn
-- Tên `jconnect`: APN `plus.4g`, user `plus`, password `4g`, CHAP, IPv4/IPv6.
-- Tên `LINEモバイル`: APN `line.me`, user `line@line`, password `line`, PAP hoặc CHAP, IPv4/IPv6.
+- Wi-Fi: `Longkaca5G`; password: `15082020`.
+- Chọn APN `jconnect` hoặc `LINEモバイル` trước khi tạo QR.
+- Gmail để trống vì giữ Gmail hệ thống có sẵn.
 
-Cả hai loại SIM đều chạy trên hạ tầng SoftBank. Vì vậy chữ `SoftBank` không được dùng để tự phân biệt; nếu máy không trả về đúng tên MVNO thì người dùng chọn một trong hai nút.
+## Release assets
 
-Override APN cần Android 9+ và LongDPC phải là Device Owner. Chế độ tự động không đoán bừa: nếu tên nhà mạng không nhận diện chắc chắn, app yêu cầu bấm đúng nút.
+Tag `apps-v2`:
 
-## File app cần host bằng HTTPS trực tiếp
-- `apps-v2/tiktok.apks`
-- `apps-v2/tiktok-lite.apks`
-- `apps-v2/line.apks`
-- `apps-v2/autoscroll.apk`
-- Gmail để trống: giữ Gmail hệ thống có sẵn, không tải thêm.
-- `apps-v2/long-ocr-v13.apk`
+- `tiktok.apks`
+- `tiktok-lite.apks`
+- `line.apks`
+- `autoscroll.apk`
+- `long-ocr-v14.apk`
 
-Long OCR tự cài từ asset `long-ocr-v13.apk`. Ứng dụng chụp toàn bộ văn bản, sắp xếp các dòng theo tọa độ từ trên xuống và cho sửa/sao chép từng hàng. Gmail hệ thống được giữ nhờ provisioning không tắt ứng dụng hệ thống; ô Gmail mặc định để trống để tránh lỗi phiên bản trên Android 12. Máy mẹ chọn `jconnect` hoặc `LINEモバイル` trước khi tạo QR.
+Tag `v2.5-test`:
 
-## Dùng Long OCR
-1. Mở Long OCR. Khi được cài bởi LongDPC Device Owner, quyền Camera được tự cấp; nếu cài riêng thì cho phép Camera lần đầu.
-2. Đưa bảng email vào khung; app thêm mỗi email vào một dòng cố định, không nhảy vị trí.
-3. Giữ máy thẳng, đủ sáng rồi bấm `CHỤP VÀ QUÉT`; kiểm tra/sửa đúng dòng và bấm `SAO CHÉP`.
-4. Dòng đã dùng đổi thành `ĐÃ COPY ✓`; bấm `XÓA DANH SÁCH` khi chuyển sang bảng khác.
+- `app-debug.apk`
 
-## Giới hạn Android/OEM
-LongDPC yêu cầu Android bỏ qua education screens và tự trả về `RESULT_OK` ở compliance flow. Màn hình pháp lý, kích hoạt SIM hoặc màn hình bắt buộc riêng của firmware AQUOS/arrows vẫn có thể xuất hiện; DPC không được phép vượt màn hình bắt buộc.
+## Long OCR 1.4
 
-## Build
-Build bằng AndroidIDE/JDK 17 + SDK 34 hoặc GitHub Actions. APK tại URL provisioning phải được ký bằng đúng chứng thư mà máy mẹ dùng để tạo checksum.
+Ứng dụng chụp ảnh chất lượng cao, lấy nét khi chạm, sắp xếp dòng OCR theo tọa độ từ trên xuống, ghép tối đa ba dòng và trích mọi email có domain kết thúc bằng `.us`. Kết quả dừng ngay sau `.us`, không lấy phần `|mật khẩu`. Mỗi email có nút sao chép và trạng thái `ĐÃ COPY`.
+
+## Kiểm tra
+
+```bash
+python3 tools_static_check.py
+```
+
+GitHub Actions build cả `LongDPC-debug-apk` và `LongOCR-debug-apk`.

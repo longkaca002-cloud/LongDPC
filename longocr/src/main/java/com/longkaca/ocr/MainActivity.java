@@ -156,9 +156,12 @@ public class MainActivity extends ComponentActivity {
                     recognizer.process(image)
                             .addOnSuccessListener(text -> {
                                 List<RecognizedLine> lines = collectLines(text);
+                                List<String> rawLines = new ArrayList<>();
+                                for (RecognizedLine line : lines) rawLines.add(line.value);
+                                List<String> emails = EmailExtractor.usEmailsFromLines(rawLines);
                                 runOnUiThread(() -> {
-                                    if (lines.isEmpty()) status.setText("Chưa thấy văn bản — đưa máy gần hơn, đủ sáng rồi chụp lại");
-                                    else showLines(lines);
+                                    if (emails.isEmpty()) status.setText("Chưa thấy email kết thúc bằng .us — đưa máy gần hơn rồi chụp lại");
+                                    else showEmails(emails);
                                 });
                             })
                             .addOnFailureListener(e -> runOnUiThread(() -> status.setText("OCR lỗi: " + e.getMessage())))
@@ -198,10 +201,10 @@ public class MainActivity extends ComponentActivity {
         return lines;
     }
 
-    private void showLines(List<RecognizedLine> lines) {
+    private void showEmails(List<String> emails) {
         rowCount = 0;
         lineList.removeAllViews();
-        for (RecognizedLine recognized : lines) {
+        for (String email : emails) {
             if (rowCount >= 100) break;
             rowCount++;
             LinearLayout row = new LinearLayout(this);
@@ -212,7 +215,7 @@ public class MainActivity extends ComponentActivity {
             number.setTextSize(16);
             row.addView(number, new LinearLayout.LayoutParams(dp(42), -2));
             EditText value = new EditText(this);
-            value.setText(recognized.value);
+            value.setText(email);
             value.setSingleLine(true);
             value.setTextSize(16);
             row.addView(value, new LinearLayout.LayoutParams(0, -2, 1));
@@ -222,7 +225,7 @@ public class MainActivity extends ComponentActivity {
             row.addView(copy, new LinearLayout.LayoutParams(dp(128), -2));
             lineList.addView(row);
         }
-        status.setText("Đã nhận " + rowCount + " hàng theo thứ tự từ trên xuống — chọn hàng để sao chép");
+        status.setText("Đã ghép và nhận " + rowCount + " email .us từ trên xuống — chọn email để sao chép");
     }
 
     private void copyEmail(EditText field, Button button) {

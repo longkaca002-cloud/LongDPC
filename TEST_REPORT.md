@@ -1,9 +1,9 @@
-# LongDPC v2.4 + Long OCR 1.3 — kết quả kiểm tra
+# LongDPC v2.5 + Long OCR 1.4 — kết quả kiểm tra
 
 - Máy mẹ mặc định Wi-Fi `Longkaca5G`, password `15082020`.
 - Máy mẹ chọn APN cụ thể trước khi tạo QR; mặc định `jconnect`.
 - Gmail mặc định không tải; ứng dụng hệ thống được giữ lại.
-- Long OCR dùng asset riêng `long-ocr-v13.apk` và hiển thị từng hàng theo tọa độ.
+- Long OCR dùng asset riêng `long-ocr-v14.apk`, ghép email `.us` bị xuống dòng và bỏ phần sau email.
 
 - Long OCR 1.2 dùng ảnh JPEG chất lượng cao thay cho OCR liên tục.
 - Có chạm để lấy nét, nút `CHỤP VÀ QUÉT`, danh sách email và trạng thái `ĐÃ COPY`.
@@ -29,6 +29,6 @@ Ngày: 2026-09-02
 ## Cổng kiểm tra trước khi dùng hàng loạt
 1. Chạy workflow GitHub Actions đi kèm để build `app-debug.apk` và `longocr-debug.apk`.
 2. Cài Long OCR lên một điện thoại, cho phép Camera và thử giấy chứa email thật.
-3. Upload Long OCR với tên release asset `long-ocr-v13.apk`; Gmail hệ thống không cần asset mặc định.
+3. Upload Long OCR với tên release asset `long-ocr-v14.apk`; Gmail hệ thống không cần asset mặc định.
 4. Upload LongDPC, tạo QR bằng chính APK cùng chữ ký và provision một máy đã factory reset.
 5. Xác nhận đủ 6 app; thử từng SIM với nút APN đúng trước khi nhân rộng.

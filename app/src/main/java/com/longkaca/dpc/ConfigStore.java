@@ -62,9 +62,9 @@ public final class ConfigStore {
         prefs(c).edit().putString(key, value).apply();
     }
 
-    /** Apply the requested v2.4 mother defaults once, replacing values cached by older builds. */
-    public static void initializeMotherV24Defaults(Context c) {
-        if ("24".equals(get(c, "mother_defaults_version", ""))) return;
+    /** Apply the requested v2.5 mother defaults once, replacing values cached by older builds. */
+    public static void initializeMotherV25Defaults(Context c) {
+        if ("25".equals(get(c, "mother_defaults_version", ""))) return;
         SharedPreferences.Editor e = prefs(c).edit();
         e.putString("mother_dpc_url", AppCatalog.DEFAULT_DPC_URL);
         e.putString("mother_wifi_ssid", AppCatalog.DEFAULT_WIFI_SSID);
@@ -73,7 +73,7 @@ public final class ConfigStore {
         for (int i = 0; i < AppCatalog.DEFAULT_URLS.length; i++) {
             e.putString("mother_apk_" + i + "_url", AppCatalog.DEFAULT_URLS[i]);
         }
-        e.putString("mother_defaults_version", "24");
+        e.putString("mother_defaults_version", "25");
         e.apply();
     }
 
