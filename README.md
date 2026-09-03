@@ -40,3 +40,5 @@ Trình tải APK/APKS lưu phần đã nhận và dùng HTTP Range để nối t
 App riêng không quảng cáo và không xin quyền Internet. Sau khi người dùng bật dịch vụ Trợ năng một lần, app chỉ vuốt lên trong TikTok Lite `com.ss.android.ugc.tiktok.lite`, với khoảng chờ ngẫu nhiên 10–15 giây. Android không cho Device Owner tự bật dịch vụ Trợ năng trên mọi ROM.
 
 Bản 1.1 khai báo package visibility cho Android 11–16 để nút bắt đầu tìm thấy và mở TikTok Lite, đồng thời hỗ trợ package Lite dự phòng `com.zhiliaoapp.musically.go`.
+
+Bản 1.2 bật đọc cửa sổ tương tác và nhận sự kiện TikTok Lite để sửa trường hợp app mở được nhưng không vuốt trên một số firmware AQUOS/arrows. Màn hình app ghi lại lần vuốt thành công gần nhất.

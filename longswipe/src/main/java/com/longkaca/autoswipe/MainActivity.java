@@ -72,7 +72,10 @@ public class MainActivity extends Activity {
 
     private void refresh() {
         boolean running = getSharedPreferences("swipe", MODE_PRIVATE).getBoolean("running", false);
-        status.setText(running ? "Trạng thái: ĐANG CHẠY" : "Trạng thái: ĐÃ DỪNG");
+        String last = getSharedPreferences("swipe", MODE_PRIVATE)
+                .getString("last_result", "Chưa ghi nhận lần vuốt nào");
+        status.setText((running ? "Trạng thái: ĐANG CHẠY" : "Trạng thái: ĐÃ DỪNG")
+                + "\n" + last);
         status.setTextColor(running ? Color.rgb(0, 120, 40) : Color.rgb(180, 30, 30));
     }
 

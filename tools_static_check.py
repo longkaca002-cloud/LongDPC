@@ -126,12 +126,16 @@ swipe_config=(root/'longswipe/src/main/res/xml/accessibility_service_config.xml'
 ok("applicationId 'com.longkaca.autoswipe'" in swipe_gradle, 'Long Auto Swipe package mismatch')
 ok('BIND_ACCESSIBILITY_SERVICE' in swipe_manifest, 'Long Auto Swipe accessibility permission missing')
 ok('canPerformGestures="true"' in swipe_config, 'Long Auto Swipe gesture capability missing')
+ok('canRetrieveWindowContent="true"' in swipe_config and 'flagRetrieveInteractiveWindows' in swipe_config,
+   'Long Auto Swipe foreground-window access missing')
 ok('com.ss.android.ugc.tiktok.lite' in swipe_config and 'TIKTOK_LITE' in swipe_service,
    'Long Auto Swipe must be restricted to TikTok Lite')
 ok('10_000L' in swipe_service and 'nextInt(5_001)' in swipe_service,
    'Long Auto Swipe random 10–15 second timing missing')
 ok('dispatchGesture' in swipe_service and 'path.lineTo' in swipe_service,
    'Long Auto Swipe upward gesture missing')
+ok('onAccessibilityEvent' in swipe_service and 'lastTikTokEventAt' in swipe_service,
+   'Long Auto Swipe event-based TikTok detection missing')
 ok('ACTION_ACCESSIBILITY_SETTINGS' in swipe_main, 'Accessibility settings button missing')
 ok('<queries>' in swipe_manifest and 'com.ss.android.ugc.tiktok.lite' in swipe_manifest,
    'Android 11 package visibility declaration missing')

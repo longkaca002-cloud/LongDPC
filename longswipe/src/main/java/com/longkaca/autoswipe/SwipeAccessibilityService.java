@@ -14,6 +14,7 @@ public class SwipeAccessibilityService extends AccessibilityService {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Random random = new Random();
     private boolean wasInTikTok;
+    private long lastTikTokEventAt;
 
     private final Runnable tick = new Runnable() {
         @Override public void run() {
@@ -25,8 +26,8 @@ public class SwipeAccessibilityService extends AccessibilityService {
             AccessibilityNodeInfo root = getRootInActiveWindow();
             String activePackage = root == null || root.getPackageName() == null
                     ? "" : root.getPackageName().toString();
-            boolean inTikTok = TIKTOK_LITE.equals(activePackage)
-                    || "com.zhiliaoapp.musically.go".equals(activePackage);
+            boolean inTikTok = isTikTokLite(activePackage)
+                    || System.currentTimeMillis() - lastTikTokEventAt < 5_000L;
             if (!inTikTok) {
                 wasInTikTok = false;
                 schedule(1000);
@@ -48,7 +49,12 @@ public class SwipeAccessibilityService extends AccessibilityService {
         schedule(1000);
     }
 
-    @Override public void onAccessibilityEvent(AccessibilityEvent event) { }
+    @Override public void onAccessibilityEvent(AccessibilityEvent event) {
+        if (event != null && event.getPackageName() != null
+                && isTikTokLite(event.getPackageName().toString())) {
+            lastTikTokEventAt = System.currentTimeMillis();
+        }
+    }
 
     @Override public void onInterrupt() {
         handler.removeCallbacks(tick);
@@ -66,6 +72,11 @@ public class SwipeAccessibilityService extends AccessibilityService {
 
     private long nextVideoDelay() { return 10_000L + random.nextInt(5_001); }
 
+    private boolean isTikTokLite(String packageName) {
+        return TIKTOK_LITE.equals(packageName)
+                || "com.zhiliaoapp.musically.go".equals(packageName);
+    }
+
     private void schedule(long delayMillis) { handler.postDelayed(tick, delayMillis); }
 
     private void swipeUp() {
@@ -77,6 +88,19 @@ public class SwipeAccessibilityService extends AccessibilityService {
         GestureDescription gesture = new GestureDescription.Builder()
                 .addStroke(new GestureDescription.StrokeDescription(path, 0, 450))
                 .build();
-        dispatchGesture(gesture, null, null);
+        dispatchGesture(gesture, new GestureResultCallback() {
+            @Override public void onCompleted(GestureDescription gestureDescription) {
+                getSharedPreferences("swipe", MODE_PRIVATE).edit()
+                        .putString("last_result", "Đã vuốt thành công lúc "
+                                + android.text.format.DateFormat.format("HH:mm:ss", System.currentTimeMillis()))
+                        .apply();
+            }
+
+            @Override public void onCancelled(GestureDescription gestureDescription) {
+                getSharedPreferences("swipe", MODE_PRIVATE).edit()
+                        .putString("last_result", "Cử chỉ bị Android hủy")
+                        .apply();
+            }
+        }, handler);
     }
 }
