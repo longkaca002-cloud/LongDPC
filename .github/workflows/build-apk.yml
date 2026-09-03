@@ -19,8 +19,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.2'
-      - name: Build and test both apps
-        run: gradle :app:assembleDebug :longocr:testDebugUnitTest :longocr:assembleDebug --stacktrace
+      - name: Build and test all apps
+        run: gradle :app:assembleDebug :longocr:testDebugUnitTest :longocr:assembleDebug :longswipe:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
           name: LongDPC-debug-apk
@@ -29,3 +29,7 @@ jobs:
         with:
           name: LongOCR-debug-apk
           path: longocr/build/outputs/apk/debug/longocr-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LongAutoSwipe-debug-apk
+          path: longswipe/build/outputs/apk/debug/longswipe-debug.apk

@@ -8,8 +8,8 @@ android {
         applicationId 'com.longkaca.dpc'
         minSdk 26
         targetSdk 34
-        versionCode 16
-        versionName '2.5-wrapped-us-email'
+        versionCode 19
+        versionName '2.8-long-auto-swipe'
     }
 }
 

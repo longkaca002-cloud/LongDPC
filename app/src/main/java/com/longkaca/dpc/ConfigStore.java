@@ -23,6 +23,7 @@ public final class ConfigStore {
         // Chỉ auto-install cho bộ URL nhận từ provisioning QR hiện tại.
         e.putBoolean("auto_install_requested", anyAppUrl);
         e.putBoolean("auto_install_started", false);
+        e.putString("auto_install_round", "0");
         e.apply();
     }
 
@@ -43,6 +44,7 @@ public final class ConfigStore {
         prefs(c).edit()
                 .putBoolean("auto_install_requested", false)
                 .putBoolean("auto_install_started", false)
+                .putString("auto_install_round", "0")
                 .apply();
     }
 
@@ -54,6 +56,18 @@ public final class ConfigStore {
         prefs(c).edit().putBoolean("auto_install_started", true).apply();
     }
 
+    public static int nextAutoInstallRound(Context c) {
+        int round = getAutoInstallRound(c);
+        round++;
+        put(c, "auto_install_round", Integer.toString(round));
+        return round;
+    }
+
+    public static int getAutoInstallRound(Context c) {
+        try { return Integer.parseInt(get(c, "auto_install_round", "0")); }
+        catch (NumberFormatException ignored) { return 0; }
+    }
+
     public static String get(Context c, String key, String def) {
         return prefs(c).getString(key, def);
     }
@@ -62,9 +76,9 @@ public final class ConfigStore {
         prefs(c).edit().putString(key, value).apply();
     }
 
-    /** Apply the requested v2.5 mother defaults once, replacing values cached by older builds. */
-    public static void initializeMotherV25Defaults(Context c) {
-        if ("25".equals(get(c, "mother_defaults_version", ""))) return;
+    /** Apply the requested v2.8 mother defaults once, replacing values cached by older builds. */
+    public static void initializeMotherV28Defaults(Context c) {
+        if ("28".equals(get(c, "mother_defaults_version", ""))) return;
         SharedPreferences.Editor e = prefs(c).edit();
         e.putString("mother_dpc_url", AppCatalog.DEFAULT_DPC_URL);
         e.putString("mother_wifi_ssid", AppCatalog.DEFAULT_WIFI_SSID);
@@ -73,7 +87,7 @@ public final class ConfigStore {
         for (int i = 0; i < AppCatalog.DEFAULT_URLS.length; i++) {
             e.putString("mother_apk_" + i + "_url", AppCatalog.DEFAULT_URLS[i]);
         }
-        e.putString("mother_defaults_version", "25");
+        e.putString("mother_defaults_version", "28");
         e.apply();
     }
 

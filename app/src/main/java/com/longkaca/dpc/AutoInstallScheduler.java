@@ -18,6 +18,7 @@ public final class AutoInstallScheduler {
                 JOB_ID, new ComponentName(context, AutoInstallJobService.class))
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .setMinimumLatency(8000)
+                .setBackoffCriteria(30000, JobInfo.BACKOFF_POLICY_LINEAR)
                 .build();
         js.schedule(job);
     }

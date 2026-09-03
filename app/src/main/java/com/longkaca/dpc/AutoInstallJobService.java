@@ -11,13 +11,13 @@ public class AutoInstallJobService extends JobService {
     @Override public boolean onStartJob(JobParameters params) {
         DevicePolicyManager dpm = (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
         if (dpm == null || !dpm.isDeviceOwnerApp(getPackageName())
-                || !ConfigStore.isAutoInstallRequested(this)
-                || ConfigStore.isAutoInstallStarted(this)) {
+                || !ConfigStore.isAutoInstallRequested(this)) {
             return false;
         }
 
         ConfigStore.markAutoInstallStarted(this);
         new Thread(() -> {
+            int round = ConfigStore.nextAutoInstallRound(this);
             String apnProfile = ConfigStore.get(this, "apn_profile", "").trim();
             if (!apnProfile.isEmpty()) {
                 applyApnWithRetry(apnProfile);
@@ -25,6 +25,7 @@ public class AutoInstallJobService extends JobService {
             for (int i = 0; i < AppCatalog.NAMES.length; i++) {
                 String u = ConfigStore.get(this, "apk_" + i + "_url", "").trim();
                 if (u.isEmpty()) continue;
+                if (isPackageInstalled(AppCatalog.PACKAGES[i])) continue;
                 try {
                     ApkInstaller.downloadAndInstall(
                             this, u, AppCatalog.NAMES[i], AppCatalog.PACKAGES[i]);
@@ -35,7 +36,9 @@ public class AutoInstallJobService extends JobService {
                             Toast.makeText(this, "Lỗi " + label + ": " + msg, Toast.LENGTH_LONG).show());
                 }
             }
-            jobFinished(params, false);
+            // Android may stop the first provisioning job or finish PackageInstaller callbacks later.
+            // Retry only missing packages; installed packages are skipped above.
+            jobFinished(params, round < 4);
         }).start();
         return true;
     }
@@ -64,5 +67,20 @@ public class AutoInstallJobService extends JobService {
         final String msg = last;
         new Handler(Looper.getMainLooper()).post(() ->
                 Toast.makeText(this, "APN chưa tự áp dụng: " + msg, Toast.LENGTH_LONG).show());
+    }
+
+    private boolean isPackageInstalled(String packageName) {
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= 33) {
+                getPackageManager().getPackageInfo(packageName,
+                        android.content.pm.PackageManager.PackageInfoFlags.of(0));
+            } else {
+                //noinspection deprecation
+                getPackageManager().getPackageInfo(packageName, 0);
+            }
+            return true;
+        } catch (android.content.pm.PackageManager.NameNotFoundException missing) {
+            return false;
+        }
     }
 }

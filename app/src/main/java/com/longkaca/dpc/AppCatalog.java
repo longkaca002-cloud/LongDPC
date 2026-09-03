@@ -4,20 +4,20 @@ public final class AppCatalog {
     private AppCatalog() {}
 
     public static final String DEFAULT_DPC_URL =
-            "https://github.com/longkaca002-cloud/LongDPC/releases/download/v2.5-test/app-debug.apk";
+            "https://github.com/longkaca002-cloud/LongDPC/releases/download/v2.8-test/app-debug.apk";
 
     public static final String DEFAULT_WIFI_SSID = "Longkaca5G";
     public static final String DEFAULT_WIFI_PASSWORD = "15082020";
 
     public static final String[] NAMES = {
-            "TikTok Nhật", "TikTok Lite Nhật", "LINE", "Auto Scroll", "Gmail", "Long OCR"
+            "TikTok Nhật", "TikTok Lite Nhật", "LINE", "Long Auto Swipe", "Gmail", "Long OCR"
     };
 
     public static final String[] PACKAGES = {
             "com.ss.android.ugc.trill",
             "com.ss.android.ugc.tiktok.lite",
             "jp.naver.line.android",
-            "com.tafayor.autoscrolling",
+            "com.longkaca.autoswipe",
             "com.google.android.gm",
             "com.longkaca.ocr"
     };
@@ -27,7 +27,7 @@ public final class AppCatalog {
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/tiktok.apks",
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/tiktok-lite.apks",
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/line.apks",
-            "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/autoscroll.apk",
+            "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/long-auto-swipe.apk",
             "",
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/long-ocr-v14.apk"
     };

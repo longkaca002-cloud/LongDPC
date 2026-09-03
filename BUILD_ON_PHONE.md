@@ -1,4 +1,4 @@
-# Build LongDPC v2.5 + Long OCR 1.4 on phone / Codespaces
+# Build LongDPC v2.7 + Long OCR 1.4 on phone / Codespaces
 
 From `/workspaces/LongDPC` after uploading the patch ZIP:
 

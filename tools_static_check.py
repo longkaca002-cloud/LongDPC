@@ -6,9 +6,10 @@ errors=[]
 def ok(cond,msg):
     if not cond: errors.append(msg)
 
-for p in [root/'app/src/main/AndroidManifest.xml', root/'longocr/src/main/AndroidManifest.xml',
+for p in [root/'app/src/main/AndroidManifest.xml', root/'longocr/src/main/AndroidManifest.xml', root/'longswipe/src/main/AndroidManifest.xml',
           *list((root/'app/src/main/res').rglob('*.xml')),
-          *list((root/'longocr/src/main/res').rglob('*.xml'))]:
+          *list((root/'longocr/src/main/res').rglob('*.xml')),
+          *list((root/'longswipe/src/main/res').rglob('*.xml'))]:
     try: ET.parse(p)
     except Exception as e: errors.append(f'XML {p}: {e}')
 
@@ -24,8 +25,8 @@ all_app_text=main+'\n'+catalog
 
 ok("namespace 'com.longkaca.dpc'" in app_gradle, 'namespace mismatch')
 ok("applicationId 'com.longkaca.dpc'" in app_gradle, 'applicationId mismatch')
-ok("versionCode 16" in app_gradle, 'versionCode must be 16')
-ok("versionName '2.5-wrapped-us-email'" in app_gradle, 'versionName mismatch')
+ok("versionCode 19" in app_gradle, 'versionCode must be 19')
+ok("versionName '2.8-long-auto-swipe'" in app_gradle, 'versionName mismatch')
 ok('android.app.action.GET_PROVISIONING_MODE' in manifest, 'missing GET_PROVISIONING_MODE')
 ok('android.app.action.ADMIN_POLICY_COMPLIANCE' in manifest, 'missing ADMIN_POLICY_COMPLIANCE')
 ok('android.app.action.PROVISIONING_SUCCESSFUL' in manifest, 'missing PROVISIONING_SUCCESSFUL')
@@ -43,7 +44,7 @@ for pkg in [
     'com.ss.android.ugc.trill',
     'com.ss.android.ugc.tiktok.lite',
     'jp.naver.line.android',
-    'com.tafayor.autoscrolling',
+    'com.longkaca.autoswipe',
     'com.google.android.gm',
     'com.longkaca.ocr',
 ]:
@@ -69,10 +70,14 @@ ok('.apks' in apk_installer, 'v1.8 .apks detection missing')
 ok('ZipFile' in apk_installer, 'v1.8 ZipFile split reader missing')
 ok('base.apk' in apk_installer, 'v1.8 base.apk validation missing')
 ok('session.openWrite' in apk_installer, 'PackageInstaller session writes missing')
+ok('downloadToFileResumable' in apk_installer, 'resumable downloader missing')
+ok('Range' in apk_installer and 'HTTP_PARTIAL' in apk_installer, 'HTTP Range resume missing')
+ok('attempt <= 8' in apk_installer, 'download reconnect attempts missing')
 ok('apps-v2/tiktok.apks' in catalog, 'default TikTok APKS URL missing')
 ok('apps-v2/tiktok-lite.apks' in catalog, 'default TikTok Lite APKS URL missing')
 ok('apps-v2/line.apks' in catalog, 'default LINE APKS URL missing')
-ok('apps-v2/autoscroll.apk' in catalog, 'default Auto Scroll APK URL missing')
+ok('apps-v2/long-auto-swipe.apk' in catalog, 'default Long Auto Swipe APK URL missing')
+ok('com.tafayor.autoscrolling' not in catalog, 'old external Auto Scroll remains')
 ok('apps-v2/gmail.apks' not in catalog, 'Gmail must be left as preserved system app')
 ok('apps-v2/long-ocr-v14.apk' in catalog, 'default Long OCR 1.4 APK URL missing')
 ok('apps-v3/' not in catalog, 'obsolete apps-v3 URL remains')
@@ -83,6 +88,10 @@ ok('mother_apn_profile' in main and 'apnChoice' in main, 'mother APN selector mi
 ok('Longkaca5G' in catalog, 'new default Wi-Fi missing')
 ok('ApkInstaller.downloadAndInstall' in auto_job, 'background auto installer missing')
 ok('applyApnWithRetry' in auto_job, 'APN retry missing')
+ok('nextAutoInstallRound' in auto_job and 'round < 4' in auto_job,
+   'automatic app retry rounds missing')
+ok('isPackageInstalled' in auto_job, 'installed package skip missing')
+ok('getAutoInstallRound' in main and '>= 4' in main, 'managed-screen retry resume missing')
 ok('PERMISSION_GRANT_STATE_GRANTED' in install_result and 'com.longkaca.ocr' in install_result,
    'Long OCR automatic camera permission grant missing')
 apn=(root/'app/src/main/java/com/longkaca/dpc/ApnAdmin.java').read_text()
@@ -109,6 +118,23 @@ ok('Pattern.compile' in ocr_extractor, 'Long OCR email extractor missing')
 ok('allEmails' in ocr_extractor and 'ĐÃ COPY' in ocr_main,
    'Long OCR stable email list/copy state missing')
 
+swipe_gradle=(root/'longswipe/build.gradle').read_text()
+swipe_manifest=(root/'longswipe/src/main/AndroidManifest.xml').read_text()
+swipe_service=(root/'longswipe/src/main/java/com/longkaca/autoswipe/SwipeAccessibilityService.java').read_text()
+swipe_main=(root/'longswipe/src/main/java/com/longkaca/autoswipe/MainActivity.java').read_text()
+swipe_config=(root/'longswipe/src/main/res/xml/accessibility_service_config.xml').read_text()
+ok("applicationId 'com.longkaca.autoswipe'" in swipe_gradle, 'Long Auto Swipe package mismatch')
+ok('BIND_ACCESSIBILITY_SERVICE' in swipe_manifest, 'Long Auto Swipe accessibility permission missing')
+ok('canPerformGestures="true"' in swipe_config, 'Long Auto Swipe gesture capability missing')
+ok('com.ss.android.ugc.tiktok.lite' in swipe_config and 'TIKTOK_LITE' in swipe_service,
+   'Long Auto Swipe must be restricted to TikTok Lite')
+ok('10_000L' in swipe_service and 'nextInt(5_001)' in swipe_service,
+   'Long Auto Swipe random 10–15 second timing missing')
+ok('dispatchGesture' in swipe_service and 'path.lineTo' in swipe_service,
+   'Long Auto Swipe upward gesture missing')
+ok('ACTION_ACCESSIBILITY_SETTINGS' in swipe_main, 'Accessibility settings button missing')
+ok('android.permission.INTERNET' not in swipe_manifest, 'Long Auto Swipe must not request Internet')
+
 if errors:
     print('FAIL')
     for e in errors: print('-',e)
@@ -116,7 +142,7 @@ if errors:
 print('PASS static project checks')
 print(f'Java files: {len(java)}')
 print('Package: com.longkaca.dpc')
-print('Version: 2.5-wrapped-us-email (16)')
+print('Version: 2.8-long-auto-swipe (19)')
 print('Split APK/APKS installer: present')
 print('Persistent mother defaults: present')
 print('Background auto-install JobService: present')

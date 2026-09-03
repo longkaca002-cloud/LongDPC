@@ -9,7 +9,9 @@ import android.os.Build;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -45,7 +47,18 @@ public final class ApkInstaller {
 
     private static void downloadAndInstallSingleApk(
             Context context, URL url, String label, String expectedPackage) throws Exception {
-        HttpURLConnection conn = open(url);
+        File apk = File.createTempFile("longdpc_", ".apk", context.getCacheDir());
+        try {
+            downloadToFileResumable(url, apk);
+            installSingleApk(context, apk, label, expectedPackage);
+        } finally {
+            //noinspection ResultOfMethodCallIgnored
+            apk.delete();
+        }
+    }
+
+    private static void installSingleApk(
+            Context context, File apk, String label, String expectedPackage) throws Exception {
         PackageInstaller.Session session = null;
         boolean committed = false;
         try {
@@ -53,9 +66,9 @@ public final class ApkInstaller {
             int sessionId = installer.createSession(newParams(expectedPackage));
             session = installer.openSession(sessionId);
 
-            long length = conn.getContentLengthLong();
-            try (InputStream in = new BufferedInputStream(conn.getInputStream());
-                 OutputStream out = session.openWrite("base.apk", 0, length > 0 ? length : -1)) {
+            long length = apk.length();
+            try (InputStream in = new BufferedInputStream(new FileInputStream(apk));
+                 OutputStream out = session.openWrite("base.apk", 0, length)) {
                 copy(in, out);
                 session.fsync(out);
             }
@@ -69,7 +82,6 @@ public final class ApkInstaller {
                 }
                 session.close();
             }
-            conn.disconnect();
         }
     }
 
@@ -77,16 +89,7 @@ public final class ApkInstaller {
             Context context, URL url, String label, String expectedPackage) throws Exception {
         File bundle = File.createTempFile("longdpc_", ".apks", context.getCacheDir());
         try {
-            HttpURLConnection conn = open(url);
-            try {
-                try (InputStream in = new BufferedInputStream(conn.getInputStream());
-                     OutputStream out = new BufferedOutputStream(new FileOutputStream(bundle))) {
-                    copy(in, out);
-                }
-            } finally {
-                conn.disconnect();
-            }
-
+            downloadToFileResumable(url, bundle);
             installSplitBundle(context, bundle, label, expectedPackage);
         } finally {
             //noinspection ResultOfMethodCallIgnored
@@ -189,15 +192,73 @@ public final class ApkInstaller {
         session.commit(pi.getIntentSender());
     }
 
-    private static HttpURLConnection open(URL url) throws Exception {
+    /** Download large GitHub assets with HTTP Range resume after interrupted streams. */
+    private static void downloadToFileResumable(URL url, File target) throws Exception {
+        Exception last = null;
+        for (int attempt = 1; attempt <= 8; attempt++) {
+            HttpURLConnection conn = null;
+            try {
+                long offset = target.length();
+                conn = open(url, offset);
+                int http = conn.getResponseCode();
+                if (http == 416) {
+                    try (FileOutputStream ignored = new FileOutputStream(target, false)) { /* restart */ }
+                    continue;
+                }
+                boolean append = offset > 0 && http == HttpURLConnection.HTTP_PARTIAL;
+                if (!append && offset > 0) {
+                    try (FileOutputStream ignored = new FileOutputStream(target, false)) { /* server ignored Range */ }
+                    offset = 0;
+                }
+                long expectedTotal = expectedTotal(conn, offset);
+                try (InputStream in = new BufferedInputStream(conn.getInputStream());
+                     OutputStream out = new BufferedOutputStream(new FileOutputStream(target, append))) {
+                    copy(in, out);
+                }
+                if (expectedTotal > 0 && target.length() < expectedTotal) {
+                    throw new IOException("Tải chưa đủ: " + target.length() + "/" + expectedTotal);
+                }
+                if (target.length() <= 0) throw new IOException("File tải về trống");
+                return;
+            } catch (Exception e) {
+                last = e;
+                if (attempt < 8) {
+                    try { Thread.sleep(1500L * attempt); }
+                    catch (InterruptedException interrupted) {
+                        Thread.currentThread().interrupt();
+                        throw interrupted;
+                    }
+                }
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+        }
+        throw new IOException("Tải bị ngắt sau 8 lần nối lại", last);
+    }
+
+    private static long expectedTotal(HttpURLConnection conn, long offset) {
+        String range = conn.getHeaderField("Content-Range");
+        if (range != null) {
+            int slash = range.lastIndexOf('/');
+            if (slash >= 0) {
+                try { return Long.parseLong(range.substring(slash + 1).trim()); }
+                catch (NumberFormatException ignored) {}
+            }
+        }
+        long length = conn.getContentLengthLong();
+        return length > 0 ? offset + length : -1;
+    }
+
+    private static HttpURLConnection open(URL url, long offset) throws Exception {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setConnectTimeout(20000);
         conn.setReadTimeout(180000);
         conn.setInstanceFollowRedirects(true);
-        conn.setRequestProperty("User-Agent", "LongDPC/2.0");
+        conn.setRequestProperty("User-Agent", "LongDPC/2.7");
+        if (offset > 0) conn.setRequestProperty("Range", "bytes=" + offset + "-");
         conn.connect();
         int http = conn.getResponseCode();
-        if (http < 200 || http >= 300) {
+        if ((http < 200 || http >= 300) && http != 416) {
             conn.disconnect();
             throw new IllegalStateException("HTTP " + http);
         }

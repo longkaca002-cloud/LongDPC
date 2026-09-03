@@ -47,10 +47,10 @@ public class MainActivity extends Activity {
     }
 
     private void showMotherMode() {
-        ConfigStore.initializeMotherV25Defaults(this);
-        root.addView(title("MÁY MẸ — LongDPC v2.5 — tạo QR provisioning"));
+        ConfigStore.initializeMotherV28Defaults(this);
+        root.addView(title("MÁY MẸ — LongDPC v2.8 — tạo QR provisioning"));
         TextView note = new TextView(this);
-        note.setText("v2.5: Long OCR 1.4 tự ghép email bị xuống dòng và lấy mọi email kết thúc .us; Wi-Fi Longkaca5G; chọn APN trước QR.");
+        note.setText("v2.8: tải APK/APKS có nối tiếp sau mất mạng; tự cài lại app còn thiếu; Long Auto Swipe 10–15 giây; Long OCR 1.4.");
         root.addView(note);
 
         EditText apkUrl = field("HTTPS URL của LongDPC.apk",
@@ -101,7 +101,7 @@ public class MainActivity extends Activity {
         }
 
         TextView splitNote = new TextView(this);
-        splitNote.setText("TikTok / TikTok Lite / LINE nên dùng .apks đầy đủ split. Auto Scroll dùng .apk đơn.");
+        splitNote.setText("TikTok / TikTok Lite / LINE dùng .apks đầy đủ split. Long Auto Swipe và Long OCR dùng .apk đơn.");
         root.addView(splitNote);
 
         ImageView qr = new ImageView(this); root.addView(qr, new LinearLayout.LayoutParams(-1, dp(420)));
@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
     }
 
     private void showManagedMode() {
-        root.addView(title("MÁY CON — LongDPC v2.5 — Device Owner"));
+        root.addView(title("MÁY CON — LongDPC v2.8 — Device Owner"));
         EditText ssid = field("Wi-Fi mới", ConfigStore.get(this,"wifi_ssid",AppCatalog.DEFAULT_WIFI_SSID));
         EditText pass = field("Mật khẩu Wi-Fi mới", ConfigStore.get(this,"wifi_password",AppCatalog.DEFAULT_WIFI_PASSWORD));
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -218,7 +218,7 @@ public class MainActivity extends Activity {
 
     private void maybeAutoInstall() {
         if (!ConfigStore.isAutoInstallRequested(this)) return;
-        if (ConfigStore.isAutoInstallStarted(this)) return;
+        if (ConfigStore.getAutoInstallRound(this) >= 4) return;
         AutoInstallScheduler.schedule(this);
     }
 
