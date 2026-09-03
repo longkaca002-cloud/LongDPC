@@ -1,4 +1,4 @@
-# LongDPC v2.2 + Long OCR — APKS + danh sách email + APN
+# LongDPC v2.4 + Long OCR 1.3 — chọn từng hàng văn bản
 
 ## Luồng máy con
 1. Factory reset, chạm 6 lần ở màn hình Welcome và quét QR do máy mẹ tạo.
@@ -20,10 +20,10 @@ Override APN cần Android 9+ và LongDPC phải là Device Owner. Chế độ t
 - `apps-v2/tiktok-lite.apks`
 - `apps-v2/line.apks`
 - `apps-v2/autoscroll.apk`
-- `apps-v2/gmail.apks`
-- `apps-v2/long-ocr.apk`
+- Gmail để trống: giữ Gmail hệ thống có sẵn, không tải thêm.
+- `apps-v2/long-ocr-v13.apk`
 
-Gmail và Long OCR chỉ tự cài khi hai asset tương ứng trong `apps-v2` thực sự tồn tại. Long OCR được build từ module `longocr` trong project; không cần tài khoản Google để sử dụng và không có quảng cáo. Có thể sửa URL ngay trên máy mẹ; các URL và Wi-Fi được lưu lại.
+Long OCR tự cài từ asset `long-ocr-v13.apk`. Ứng dụng chụp toàn bộ văn bản, sắp xếp các dòng theo tọa độ từ trên xuống và cho sửa/sao chép từng hàng. Gmail hệ thống được giữ nhờ provisioning không tắt ứng dụng hệ thống; ô Gmail mặc định để trống để tránh lỗi phiên bản trên Android 12. Máy mẹ chọn `jconnect` hoặc `LINEモバイル` trước khi tạo QR.
 
 ## Dùng Long OCR
 1. Mở Long OCR. Khi được cài bởi LongDPC Device Owner, quyền Camera được tự cấp; nếu cài riêng thì cho phép Camera lần đầu.

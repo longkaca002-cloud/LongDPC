@@ -6,6 +6,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -35,28 +36,29 @@ import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
+import com.google.mlkit.vision.text.Text;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends ComponentActivity {
     private static final int CAMERA_REQUEST = 2001;
     private PreviewView preview;
     private TextView status;
-    private LinearLayout emailList;
+    private LinearLayout lineList;
     private ExecutorService cameraExecutor;
     private TextRecognizer recognizer;
     private ImageCapture imageCapture;
     private Button scanButton;
     private final AtomicBoolean processing = new AtomicBoolean(false);
-    private final Map<String, Button> emailRows = new LinkedHashMap<>();
+    private int rowCount = 0;
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,16 +83,16 @@ public class MainActivity extends ComponentActivity {
         panel.setPadding(dp(14), dp(10), dp(14), dp(14));
         panel.setBackgroundColor(0xEFFFFFFF);
         status = new TextView(this);
-        status.setText("Đưa bảng email vào khung, giữ thẳng và bấm CHỤP VÀ QUÉT");
+        status.setText("Chụp toàn bộ văn bản — sau đó chọn từng hàng để sao chép");
         status.setTextColor(Color.BLACK);
         status.setTextSize(16);
         panel.addView(status);
 
-        emailList = new LinearLayout(this);
-        emailList.setOrientation(LinearLayout.VERTICAL);
-        ScrollView emailScroll = new ScrollView(this);
-        emailScroll.addView(emailList);
-        panel.addView(emailScroll, new LinearLayout.LayoutParams(-1, dp(280)));
+        lineList = new LinearLayout(this);
+        lineList.setOrientation(LinearLayout.VERTICAL);
+        ScrollView lineScroll = new ScrollView(this);
+        lineScroll.addView(lineList);
+        panel.addView(lineScroll, new LinearLayout.LayoutParams(-1, dp(320)));
 
         scanButton = new Button(this);
         scanButton.setText("CHỤP VÀ QUÉT");
@@ -101,8 +103,8 @@ public class MainActivity extends ComponentActivity {
         Button clear = new Button(this);
         clear.setText("XÓA DANH SÁCH — QUÉT TỜ KHÁC");
         clear.setOnClickListener(v -> {
-            emailRows.clear();
-            emailList.removeAllViews();
+            rowCount = 0;
+            lineList.removeAllViews();
             status.setText("Đã xóa — đưa bảng mới vào khung rồi bấm CHỤP VÀ QUÉT");
         });
         panel.addView(clear);
@@ -153,10 +155,10 @@ public class MainActivity extends ComponentActivity {
                     InputImage image = InputImage.fromFilePath(MainActivity.this, Uri.fromFile(photo));
                     recognizer.process(image)
                             .addOnSuccessListener(text -> {
-                                List<String> emails = EmailExtractor.allEmails(text.getText());
+                                List<RecognizedLine> lines = collectLines(text);
                                 runOnUiThread(() -> {
-                                    if (emails.isEmpty()) status.setText("Chưa thấy email — đưa máy gần hơn, đủ sáng rồi chụp lại");
-                                    else addEmails(emails);
+                                    if (lines.isEmpty()) status.setText("Chưa thấy văn bản — đưa máy gần hơn, đủ sáng rồi chụp lại");
+                                    else showLines(lines);
                                 });
                             })
                             .addOnFailureListener(e -> runOnUiThread(() -> status.setText("OCR lỗi: " + e.getMessage())))
@@ -180,13 +182,37 @@ public class MainActivity extends ComponentActivity {
         runOnUiThread(() -> scanButton.setEnabled(true));
     }
 
-    private void addEmails(List<String> emails) {
-        for (String email : emails) {
-            if (emailRows.containsKey(email) || emailRows.size() >= 100) continue;
+    private List<RecognizedLine> collectLines(Text result) {
+        List<RecognizedLine> lines = new ArrayList<>();
+        for (Text.TextBlock block : result.getTextBlocks()) {
+            for (Text.Line line : block.getLines()) {
+                String value = line.getText() == null ? "" : line.getText().trim();
+                Rect box = line.getBoundingBox();
+                if (!value.isEmpty()) lines.add(new RecognizedLine(value,
+                        box == null ? Integer.MAX_VALUE : box.top,
+                        box == null ? Integer.MAX_VALUE : box.left));
+            }
+        }
+        lines.sort(Comparator.comparingInt((RecognizedLine line) -> line.top)
+                .thenComparingInt(line -> line.left));
+        return lines;
+    }
+
+    private void showLines(List<RecognizedLine> lines) {
+        rowCount = 0;
+        lineList.removeAllViews();
+        for (RecognizedLine recognized : lines) {
+            if (rowCount >= 100) break;
+            rowCount++;
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.HORIZONTAL);
+            TextView number = new TextView(this);
+            number.setText(rowCount + ".");
+            number.setGravity(Gravity.CENTER);
+            number.setTextSize(16);
+            row.addView(number, new LinearLayout.LayoutParams(dp(42), -2));
             EditText value = new EditText(this);
-            value.setText(email);
+            value.setText(recognized.value);
             value.setSingleLine(true);
             value.setTextSize(16);
             row.addView(value, new LinearLayout.LayoutParams(0, -2, 1));
@@ -194,16 +220,15 @@ public class MainActivity extends ComponentActivity {
             copy.setText("SAO CHÉP");
             copy.setOnClickListener(v -> copyEmail(value, copy));
             row.addView(copy, new LinearLayout.LayoutParams(dp(128), -2));
-            emailList.addView(row);
-            emailRows.put(email, copy);
+            lineList.addView(row);
         }
-        status.setText("Đã nhận " + emailRows.size() + " email — chọn đúng dòng để sao chép");
+        status.setText("Đã nhận " + rowCount + " hàng theo thứ tự từ trên xuống — chọn hàng để sao chép");
     }
 
     private void copyEmail(EditText field, Button button) {
         String value = field.getText().toString().trim();
-        if (EmailExtractor.firstEmail(value).isEmpty()) {
-            Toast.makeText(this, "Kết quả chưa giống một địa chỉ email hợp lệ", Toast.LENGTH_LONG).show();
+        if (value.isEmpty()) {
+            Toast.makeText(this, "Hàng này đang trống", Toast.LENGTH_LONG).show();
             return;
         }
         ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
@@ -211,6 +236,17 @@ public class MainActivity extends ComponentActivity {
         button.setText("ĐÃ COPY ✓");
         button.setEnabled(false);
         Toast.makeText(this, "Đã sao chép: " + value, Toast.LENGTH_SHORT).show();
+    }
+
+    private static final class RecognizedLine {
+        final String value;
+        final int top;
+        final int left;
+        RecognizedLine(String value, int top, int left) {
+            this.value = value;
+            this.top = top;
+            this.left = left;
+        }
     }
 
     @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grants) {

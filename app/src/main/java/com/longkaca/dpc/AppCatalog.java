@@ -4,9 +4,9 @@ public final class AppCatalog {
     private AppCatalog() {}
 
     public static final String DEFAULT_DPC_URL =
-            "https://github.com/longkaca002-cloud/LongDPC/releases/download/v2.2-test/app-debug.apk";
+            "https://github.com/longkaca002-cloud/LongDPC/releases/download/v2.4-test/app-debug.apk";
 
-    public static final String DEFAULT_WIFI_SSID = "Longkaca";
+    public static final String DEFAULT_WIFI_SSID = "Longkaca5G";
     public static final String DEFAULT_WIFI_PASSWORD = "15082020";
 
     public static final String[] NAMES = {
@@ -28,7 +28,7 @@ public final class AppCatalog {
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/tiktok-lite.apks",
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/line.apks",
             "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/autoscroll.apk",
-            "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/gmail.apks",
-            "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/long-ocr.apk"
+            "",
+            "https://github.com/longkaca002-cloud/LongDPC/releases/download/apps-v2/long-ocr-v13.apk"
     };
 }

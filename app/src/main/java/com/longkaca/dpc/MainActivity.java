@@ -47,9 +47,10 @@ public class MainActivity extends Activity {
     }
 
     private void showMotherMode() {
-        root.addView(title("MÁY MẸ — LongDPC v2.2 — tạo QR provisioning"));
+        ConfigStore.initializeMotherV24Defaults(this);
+        root.addView(title("MÁY MẸ — LongDPC v2.4 — tạo QR provisioning"));
         TextView note = new TextView(this);
-        note.setText("v2.2: TikTok Lite dùng APKS; Long OCR chọn email theo dòng; APN đã sửa.");
+        note.setText("v2.4: Long OCR 1.3 quét toàn văn bản, chọn từng hàng; Wi-Fi Longkaca5G; chọn APN trước khi tạo QR.");
         root.addView(note);
 
         EditText apkUrl = field("HTTPS URL của LongDPC.apk",
@@ -71,6 +72,25 @@ public class MainActivity extends Activity {
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         persist(ssid, "mother_wifi_ssid");
         persist(pass, "mother_wifi_password");
+
+        TextView apnLabel = new TextView(this);
+        apnLabel.setText("APN sẽ tự áp dụng trên máy con:");
+        root.addView(apnLabel);
+        Spinner apnChoice = new Spinner(this);
+        String[] apnItems = {"jconnect — plus.4g", "LINEモバイル — line.me"};
+        ArrayAdapter<String> apnAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_dropdown_item, apnItems);
+        apnChoice.setAdapter(apnAdapter);
+        String savedApn = ConfigStore.get(this, "mother_apn_profile", ApnAdmin.PROFILE_JCONNECT);
+        apnChoice.setSelection(ApnAdmin.PROFILE_LINE_SOFTBANK.equals(savedApn) ? 1 : 0);
+        apnChoice.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override public void onItemSelected(AdapterView<?> parent, android.view.View view, int position, long id) {
+                ConfigStore.put(MainActivity.this, "mother_apn_profile",
+                        position == 1 ? ApnAdmin.PROFILE_LINE_SOFTBANK : ApnAdmin.PROFILE_JCONNECT);
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
+        root.addView(apnChoice);
 
         List<EditText> appUrls = new ArrayList<>();
         for (int i=0;i<AppCatalog.NAMES.length;i++) {
@@ -112,7 +132,8 @@ public class MainActivity extends Activity {
                 JSONObject x = new JSONObject();
                 x.put("wifi_ssid", wifiSsid);
                 x.put("wifi_password", wifiPass);
-                x.put("apn_profile", ApnAdmin.PROFILE_AUTO);
+                x.put("apn_profile", apnChoice.getSelectedItemPosition() == 1
+                        ? ApnAdmin.PROFILE_LINE_SOFTBANK : ApnAdmin.PROFILE_JCONNECT);
                 for (int i=0;i<AppCatalog.NAMES.length;i++) {
                     String u = appUrls.get(i).getText().toString().trim();
                     if (!u.isEmpty() && !u.startsWith("https://")) {
@@ -130,7 +151,7 @@ public class MainActivity extends Activity {
     }
 
     private void showManagedMode() {
-        root.addView(title("MÁY CON — LongDPC v2.2 — Device Owner"));
+        root.addView(title("MÁY CON — LongDPC v2.4 — Device Owner"));
         EditText ssid = field("Wi-Fi mới", ConfigStore.get(this,"wifi_ssid",AppCatalog.DEFAULT_WIFI_SSID));
         EditText pass = field("Mật khẩu Wi-Fi mới", ConfigStore.get(this,"wifi_password",AppCatalog.DEFAULT_WIFI_PASSWORD));
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);

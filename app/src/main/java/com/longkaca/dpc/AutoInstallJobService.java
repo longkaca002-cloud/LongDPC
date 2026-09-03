@@ -20,8 +20,7 @@ public class AutoInstallJobService extends JobService {
         new Thread(() -> {
             String apnProfile = ConfigStore.get(this, "apn_profile", "").trim();
             if (!apnProfile.isEmpty()) {
-                try { ApnAdmin.apply(this, apnProfile); }
-                catch (Exception ignored) { /* Manual APN buttons remain available. */ }
+                applyApnWithRetry(apnProfile);
             }
             for (int i = 0; i < AppCatalog.NAMES.length; i++) {
                 String u = ConfigStore.get(this, "apk_" + i + "_url", "").trim();
@@ -44,5 +43,26 @@ public class AutoInstallJobService extends JobService {
     @Override public boolean onStopJob(JobParameters params) {
         // MainActivity vẫn là fallback thủ công nếu firmware dừng job giữa chừng.
         return false;
+    }
+
+    private void applyApnWithRetry(String profile) {
+        String last = "";
+        for (int attempt = 1; attempt <= 6; attempt++) {
+            try {
+                String result = ApnAdmin.apply(this, profile);
+                ConfigStore.put(this, "last_apn_status", result);
+                return;
+            } catch (Exception e) {
+                last = e.getMessage() == null ? e.toString() : e.getMessage();
+                ConfigStore.put(this, "last_apn_status", "Lần " + attempt + ": " + last);
+                if (attempt < 6) {
+                    try { Thread.sleep(5000); }
+                    catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); break; }
+                }
+            }
+        }
+        final String msg = last;
+        new Handler(Looper.getMainLooper()).post(() ->
+                Toast.makeText(this, "APN chưa tự áp dụng: " + msg, Toast.LENGTH_LONG).show());
     }
 }

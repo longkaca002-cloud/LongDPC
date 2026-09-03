@@ -8,8 +8,8 @@ android {
         applicationId 'com.longkaca.dpc'
         minSdk 26
         targetSdk 34
-        versionCode 13
-        versionName '2.2-split-fix-email-list-apn'
+        versionCode 15
+        versionName '2.4-selectable-ocr-lines'
     }
 }
 
