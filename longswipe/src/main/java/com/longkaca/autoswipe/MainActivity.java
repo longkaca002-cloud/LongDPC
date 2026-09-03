@@ -12,6 +12,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
+    private static final String[] TIKTOK_LITE_PACKAGES = {
+            SwipeAccessibilityService.TIKTOK_LITE,
+            "com.zhiliaoapp.musically.go"
+    };
     private TextView status;
 
     @Override public void onCreate(Bundle savedInstanceState) {
@@ -47,10 +51,15 @@ public class MainActivity extends Activity {
 
     private void startWatching() {
         setRunning(true);
-        Intent launch = getPackageManager().getLaunchIntentForPackage(SwipeAccessibilityService.TIKTOK_LITE);
+        Intent launch = null;
+        for (String packageName : TIKTOK_LITE_PACKAGES) {
+            launch = getPackageManager().getLaunchIntentForPackage(packageName);
+            if (launch != null) break;
+        }
         if (launch == null) {
-            Toast.makeText(this, "Chưa cài TikTok Lite", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Không tìm thấy biểu tượng mở TikTok Lite. Hãy mở TikTok Lite thủ công; tự vuốt vẫn đang bật.", Toast.LENGTH_LONG).show();
         } else {
+            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
             startActivity(launch);
         }
     }

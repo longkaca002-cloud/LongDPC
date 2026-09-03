@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Android 11+ ẩn ứng dụng khác nếu không khai báo package visibility. -->
+    <queries>
+        <package android:name="com.ss.android.ugc.tiktok.lite" />
+        <package android:name="com.zhiliaoapp.musically.go" />
+    </queries>
     <application android:allowBackup="false" android:label="Long Auto Swipe" android:theme="@style/AppTheme">
         <activity android:name=".MainActivity" android:screenOrientation="portrait" android:exported="true">
             <intent-filter>

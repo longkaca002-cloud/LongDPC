@@ -23,7 +23,10 @@ public class SwipeAccessibilityService extends AccessibilityService {
                 return;
             }
             AccessibilityNodeInfo root = getRootInActiveWindow();
-            boolean inTikTok = root != null && TIKTOK_LITE.contentEquals(root.getPackageName());
+            String activePackage = root == null || root.getPackageName() == null
+                    ? "" : root.getPackageName().toString();
+            boolean inTikTok = TIKTOK_LITE.equals(activePackage)
+                    || "com.zhiliaoapp.musically.go".equals(activePackage);
             if (!inTikTok) {
                 wasInTikTok = false;
                 schedule(1000);

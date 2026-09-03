@@ -133,6 +133,8 @@ ok('10_000L' in swipe_service and 'nextInt(5_001)' in swipe_service,
 ok('dispatchGesture' in swipe_service and 'path.lineTo' in swipe_service,
    'Long Auto Swipe upward gesture missing')
 ok('ACTION_ACCESSIBILITY_SETTINGS' in swipe_main, 'Accessibility settings button missing')
+ok('<queries>' in swipe_manifest and 'com.ss.android.ugc.tiktok.lite' in swipe_manifest,
+   'Android 11 package visibility declaration missing')
 ok('android.permission.INTERNET' not in swipe_manifest, 'Long Auto Swipe must not request Internet')
 
 if errors:
