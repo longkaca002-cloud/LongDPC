@@ -25,8 +25,8 @@ all_app_text=main+'\n'+catalog
 
 ok("namespace 'com.longkaca.dpc'" in app_gradle, 'namespace mismatch')
 ok("applicationId 'com.longkaca.dpc'" in app_gradle, 'applicationId mismatch')
-ok("versionCode 19" in app_gradle, 'versionCode must be 19')
-ok("versionName '2.8-long-auto-swipe'" in app_gradle, 'versionName mismatch')
+ok("versionCode 20" in app_gradle, 'versionCode must be 20')
+ok("versionName '2.9-cloudflare-apn-off'" in app_gradle, 'versionName mismatch')
 ok('android.app.action.GET_PROVISIONING_MODE' in manifest, 'missing GET_PROVISIONING_MODE')
 ok('android.app.action.ADMIN_POLICY_COMPLIANCE' in manifest, 'missing ADMIN_POLICY_COMPLIANCE')
 ok('android.app.action.PROVISIONING_SUCCESSFUL' in manifest, 'missing PROVISIONING_SUCCESSFUL')
@@ -73,6 +73,7 @@ ok('session.openWrite' in apk_installer, 'PackageInstaller session writes missin
 ok('downloadToFileResumable' in apk_installer, 'resumable downloader missing')
 ok('Range' in apk_installer and 'HTTP_PARTIAL' in apk_installer, 'HTTP Range resume missing')
 ok('attempt <= 8' in apk_installer, 'download reconnect attempts missing')
+ok('LongDPC/2.9' in apk_installer, 'downloader user-agent version mismatch')
 ok('apps-v2/tiktok.apks' in catalog, 'default TikTok APKS URL missing')
 ok('apps-v2/tiktok-lite.apks' in catalog, 'default TikTok Lite APKS URL missing')
 ok('apps-v2/line.apks' in catalog, 'default LINE APKS URL missing')
@@ -97,6 +98,9 @@ ok('PERMISSION_GRANT_STATE_GRANTED' in install_result and 'com.longkaca.ocr' in 
 apn=(root/'app/src/main/java/com/longkaca/dpc/ApnAdmin.java').read_text()
 ok('addOverrideApn' in apn and 'setOverrideApnsEnabled' in apn, 'override APN support missing')
 ok('plus.4g' in apn and 'line.me' in apn, 'APN profiles missing')
+ok('disableManagedApn' in apn and 'setOverrideApnsEnabled(admin, false)' in apn,
+   'managed APN disable/fallback missing')
+ok('TẮT APN QUẢN LÝ' in main, 'managed APN off button missing')
 
 ocr_manifest=(root/'longocr/src/main/AndroidManifest.xml').read_text()
 ocr_main=(root/'longocr/src/main/java/com/longkaca/ocr/MainActivity.java').read_text()
@@ -141,6 +145,26 @@ ok('<queries>' in swipe_manifest and 'com.ss.android.ugc.tiktok.lite' in swipe_m
    'Android 11 package visibility declaration missing')
 ok('android.permission.INTERNET' not in swipe_manifest, 'Long Auto Swipe must not request Internet')
 
+worker=(root/'cloudflare-worker/src/index.js').read_text()
+worker_config=(root/'cloudflare-worker/wrangler.jsonc').read_text()
+ok('env.FILES.get' in worker and 'range: request.headers' in worker,
+   'Cloudflare R2 Worker ranged read missing')
+ok('content-range' in worker and 'status = 206' in worker and 'accept-ranges' in worker,
+   'Cloudflare Worker HTTP Range response missing')
+ok('request.method !== "GET"' in worker and 'request.method !== "HEAD"' in worker,
+   'Cloudflare Worker must be read-only')
+ok('"binding": "FILES"' in worker_config and '"bucket_name": "longdpc-files"' in worker_config,
+   'Cloudflare Worker R2 binding mismatch')
+signed_workflow=(root/'.github/workflows/build-signed-release.yml').read_text()
+ok('ANDROID_KEYSTORE_BASE64' in signed_workflow and 'assembleRelease' in signed_workflow,
+   'stable signed release workflow missing')
+for module_gradle in [app_gradle, (root/'longocr/build.gradle').read_text(), swipe_gradle]:
+    ok('ANDROID_KEYSTORE_PATH' in module_gradle and 'signingConfigs' in module_gradle,
+       'release signing configuration missing')
+gitignore=(root/'.gitignore').read_text()
+ok('*.jks' in gitignore and '*.keystore' in gitignore,
+   'keystore files must be excluded from git')
+
 if errors:
     print('FAIL')
     for e in errors: print('-',e)
@@ -148,7 +172,7 @@ if errors:
 print('PASS static project checks')
 print(f'Java files: {len(java)}')
 print('Package: com.longkaca.dpc')
-print('Version: 2.8-long-auto-swipe (19)')
+print('Version: 2.9-cloudflare-apn-off (20)')
 print('Split APK/APKS installer: present')
 print('Persistent mother defaults: present')
 print('Background auto-install JobService: present')

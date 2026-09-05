@@ -1,5 +1,7 @@
 plugins { id 'com.android.application' }
 
+def releaseKeystore = System.getenv('ANDROID_KEYSTORE_PATH')
+
 android {
     namespace 'com.longkaca.ocr'
     compileSdk 34
@@ -10,6 +12,23 @@ android {
         targetSdk 34
         versionCode 5
         versionName '1.4-wrapped-us-email'
+    }
+
+    signingConfigs {
+        release {
+            if (releaseKeystore) {
+                storeFile file(releaseKeystore)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (releaseKeystore) signingConfig signingConfigs.release
+            minifyEnabled false
+        }
     }
 }
 

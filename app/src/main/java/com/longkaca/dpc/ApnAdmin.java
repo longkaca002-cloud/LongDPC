@@ -72,5 +72,26 @@ public final class ApnAdmin {
         return "Đã bật APN " + shown;
     }
 
+    /** Stop using Device Owner override APNs and return control to the SIM/carrier APN table. */
+    public static String disableManagedApn(Context context) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            throw new IllegalStateException("Máy cần Android 9 trở lên");
+        }
+        DevicePolicyManager dpm = (DevicePolicyManager)
+                context.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        if (dpm == null || !dpm.isDeviceOwnerApp(context.getPackageName())) {
+            throw new SecurityException("LongDPC chưa là Device Owner");
+        }
+        ComponentName admin = new ComponentName(context, LongDeviceAdminReceiver.class);
+        // Disable first so Android immediately falls back to the carrier/SIM APN table.
+        dpm.setOverrideApnsEnabled(admin, false);
+        List<ApnSetting> old = dpm.getOverrideApns(admin);
+        if (old != null) {
+            for (ApnSetting apn : old) dpm.removeOverrideApn(admin, apn.getId());
+        }
+        ConfigStore.put(context, "last_apn_profile", "disabled");
+        return "Đã tắt APN do LongDPC quản lý — máy sẽ dùng APN mặc định của SIM";
+    }
+
     private static String safe(String s) { return s == null ? "" : s.trim(); }
 }

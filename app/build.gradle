@@ -1,5 +1,7 @@
 plugins { id 'com.android.application' }
 
+def releaseKeystore = System.getenv('ANDROID_KEYSTORE_PATH')
+
 android {
     namespace 'com.longkaca.dpc'
     compileSdk 34
@@ -8,8 +10,25 @@ android {
         applicationId 'com.longkaca.dpc'
         minSdk 26
         targetSdk 34
-        versionCode 19
-        versionName '2.8-long-auto-swipe'
+        versionCode 20
+        versionName '2.9-cloudflare-apn-off'
+    }
+
+    signingConfigs {
+        release {
+            if (releaseKeystore) {
+                storeFile file(releaseKeystore)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (releaseKeystore) signingConfig signingConfigs.release
+            minifyEnabled false
+        }
     }
 }
 

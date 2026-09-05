@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "longdpc-files",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-05",
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "longdpc-files"
+    }
+  ]
+}

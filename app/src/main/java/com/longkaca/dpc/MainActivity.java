@@ -48,9 +48,9 @@ public class MainActivity extends Activity {
 
     private void showMotherMode() {
         ConfigStore.initializeMotherV28Defaults(this);
-        root.addView(title("MÁY MẸ — LongDPC v2.8 — tạo QR provisioning"));
+        root.addView(title("MÁY MẸ — LongDPC v2.9 — tạo QR provisioning"));
         TextView note = new TextView(this);
-        note.setText("v2.8: tải APK/APKS có nối tiếp sau mất mạng; tự cài lại app còn thiếu; Long Auto Swipe 10–15 giây; Long OCR 1.4.");
+        note.setText("v2.9: sẵn sàng dùng URL Cloudflare R2/Worker; tải nối tiếp; có nút tắt APN quản lý; Long Auto Swipe 1.2; Long OCR 1.4.");
         root.addView(note);
 
         EditText apkUrl = field("HTTPS URL của LongDPC.apk",
@@ -151,7 +151,7 @@ public class MainActivity extends Activity {
     }
 
     private void showManagedMode() {
-        root.addView(title("MÁY CON — LongDPC v2.8 — Device Owner"));
+        root.addView(title("MÁY CON — LongDPC v2.9 — Device Owner"));
         EditText ssid = field("Wi-Fi mới", ConfigStore.get(this,"wifi_ssid",AppCatalog.DEFAULT_WIFI_SSID));
         EditText pass = field("Mật khẩu Wi-Fi mới", ConfigStore.get(this,"wifi_password",AppCatalog.DEFAULT_WIFI_PASSWORD));
         pass.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -183,6 +183,8 @@ public class MainActivity extends Activity {
         apnJconnect.setOnClickListener(v -> applyApn(ApnAdmin.PROFILE_JCONNECT));
         Button apnLine = button("ÁP APN — Tên: LINEモバイル");
         apnLine.setOnClickListener(v -> applyApn(ApnAdmin.PROFILE_LINE_SOFTBANK));
+        Button apnOff = button("TẮT APN QUẢN LÝ — DÙNG APN CỦA SIM");
+        apnOff.setOnClickListener(v -> disableManagedApn());
 
         root.addView(title("Cài APK / APKS"));
         List<EditText> urls = new ArrayList<>();
@@ -213,6 +215,16 @@ public class MainActivity extends Activity {
             Toast.makeText(this, result, Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             Toast.makeText(this, "Không áp được APN: " + (e.getMessage() == null ? e : e.getMessage()), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void disableManagedApn() {
+        try {
+            String result = ApnAdmin.disableManagedApn(this);
+            Toast.makeText(this, result, Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(this, "Không tắt được APN quản lý: "
+                    + (e.getMessage() == null ? e : e.getMessage()), Toast.LENGTH_LONG).show();
         }
     }
 

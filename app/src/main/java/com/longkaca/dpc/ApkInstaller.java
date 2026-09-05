@@ -192,7 +192,7 @@ public final class ApkInstaller {
         session.commit(pi.getIntentSender());
     }
 
-    /** Download large GitHub assets with HTTP Range resume after interrupted streams. */
+    /** Download large HTTPS assets (GitHub or Cloudflare R2) with HTTP Range resume. */
     private static void downloadToFileResumable(URL url, File target) throws Exception {
         Exception last = null;
         for (int attempt = 1; attempt <= 8; attempt++) {
@@ -254,7 +254,7 @@ public final class ApkInstaller {
         conn.setConnectTimeout(20000);
         conn.setReadTimeout(180000);
         conn.setInstanceFollowRedirects(true);
-        conn.setRequestProperty("User-Agent", "LongDPC/2.7");
+        conn.setRequestProperty("User-Agent", "LongDPC/2.9");
         if (offset > 0) conn.setRequestProperty("Range", "bytes=" + offset + "-");
         conn.connect();
         int http = conn.getResponseCode();

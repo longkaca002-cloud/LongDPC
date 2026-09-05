@@ -1,4 +1,4 @@
-# LongDPC v2.8 + Long OCR 1.4 + Long Auto Swipe 1.0
+# LongDPC v2.9 + Long OCR 1.4 + Long Auto Swipe 1.2
 
 ## Mặc định máy mẹ
 
@@ -34,6 +34,10 @@ GitHub Actions build `LongDPC-debug-apk`, `LongOCR-debug-apk` và `LongAutoSwipe
 
 LongDPC tự cài lại tối đa bốn vòng và bỏ qua package đã cài, giúp phục hồi khi mạng hoặc firmware dừng vòng đầu.
 Trình tải APK/APKS lưu phần đã nhận và dùng HTTP Range để nối tiếp tối đa tám lần khi đường truyền bị ngắt.
+
+Máy con có nút `TẮT APN QUẢN LÝ — DÙNG APN CỦA SIM`: tắt override APN, xóa hồ sơ do LongDPC tạo và trả quyền chọn APN về bảng cấu hình của SIM/nhà mạng.
+
+Thư mục `cloudflare-worker` chứa Worker R2 chỉ đọc, hỗ trợ HTTPS GET/HEAD và HTTP Range. Nên dùng object có số phiên bản để tránh cache hoặc URL cũ.
 
 ## Long Auto Swipe 1.1
 

@@ -1,4 +1,4 @@
-# LongDPC v2.8 + Long OCR 1.4 + Long Auto Swipe 1.0 — kết quả kiểm tra
+# LongDPC v2.9 + Long OCR 1.4 + Long Auto Swipe 1.2 — kết quả kiểm tra
 
 - Máy mẹ mặc định Wi-Fi `Longkaca5G`, password `15082020`.
 - Máy mẹ chọn APN cụ thể trước khi tạo QR; mặc định `jconnect`.
@@ -16,6 +16,9 @@ Ngày: 2026-09-02
 - Package Device Owner thống nhất `com.longkaca.dpc`; Long OCR là `com.longkaca.ocr`.
 - QR giữ system apps, tự nhập Wi-Fi và chuyển đủ 6 URL app qua admin extras.
 - Long Auto Swipe không có quyền Internet; manifest giới hạn dịch vụ vào TikTok Lite và cho phép cử chỉ vuốt.
+- Có nút tắt/xóa override APN để trả kết nối về APN mặc định của SIM.
+- Có Cloudflare R2 Worker read-only, HTTPS GET/HEAD và HTTP Range 206 để nối tải.
+- Có workflow release dùng keystore cố định lưu bằng GitHub Actions Secrets.
 - Bộ cài nhận APK đơn và `.apks` nhiều split trong một PackageInstaller session.
 - Trường Tên APN đúng: `jconnect` và `LINEモバイル`; cả hai dùng IPv4/IPv6.
 - Không coi riêng chữ `SoftBank` là LINE Mobile vì cả hai SIM đều dùng hạ tầng SoftBank.
@@ -27,6 +30,7 @@ Ngày: 2026-09-02
 ## Không thể xác nhận tại đây
 - Không có Android SDK/Gradle và không có thiết bị/emulator, nên chưa thể sinh APK hoặc mở camera thật trong môi trường này.
 - Chưa thể kiểm chứng Setup Wizard riêng của từng firmware AQUOS/arrows hay dữ liệu di động thực tế.
+- Chưa có tài khoản/bucket/URL Cloudflare của người dùng, nên chỉ kiểm tra cú pháp Worker; phải chạy hai lệnh curl 200/206 sau khi deploy.
 
 ## Cổng kiểm tra trước khi dùng hàng loạt
 1. Chạy workflow GitHub Actions đi kèm để build `app-debug.apk`, `longocr-debug.apk` và `longswipe-debug.apk`.

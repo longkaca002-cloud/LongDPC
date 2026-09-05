@@ -1,5 +1,7 @@
 plugins { id 'com.android.application' }
 
+def releaseKeystore = System.getenv('ANDROID_KEYSTORE_PATH')
+
 android {
     namespace 'com.longkaca.autoswipe'
     compileSdk 34
@@ -10,5 +12,22 @@ android {
         targetSdk 34
         versionCode 3
         versionName '1.2-foreground-detection-fix'
+    }
+
+    signingConfigs {
+        release {
+            if (releaseKeystore) {
+                storeFile file(releaseKeystore)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (releaseKeystore) signingConfig signingConfigs.release
+            minifyEnabled false
+        }
     }
 }
