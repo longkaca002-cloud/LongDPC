@@ -1,0 +1,49 @@
+name: Build LongDPC v2.9
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract LongDPC v2.9
+        run: |
+          unzip -o LongDPC_v2.9_PROXY_LOCKDOWN.zip -d /tmp/longdpc-v29
+          cp -r /tmp/longdpc-v29/. .
+
+      - name: Verify version
+        run: |
+          grep -n "versionCode 20" app/build.gradle
+          grep -n "versionName '2.9-proxy-lockdown'" app/build.gradle
+          python3 tools_static_check.py
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Prepare Gradle
+        run: chmod +x gradlew
+
+      - name: Build LongDPC APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Upload LongDPC APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LongDPC-v2.9-Proxy-Lockdown
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
